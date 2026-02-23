@@ -1,0 +1,11 @@
+{
+  "name": "hirevia",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "app": "cd app && npx expo start",
+    "app:clear": "cd app && npx expo start --clear",
+    "web": "cd web-portal && npm run dev",
+    "backend": "cd backend && npm run dev"
+  }
+}
