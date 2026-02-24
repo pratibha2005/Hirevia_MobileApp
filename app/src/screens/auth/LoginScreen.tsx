@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
 
 const THEME = {
@@ -41,10 +43,11 @@ export default function LoginScreen({ navigation }: any) {
                     setError('This app is for applicants only. HR should use the web portal.');
                     return;
                 }
-                Alert.alert('Welcome back', data.user.name);
+                await AsyncStorage.setItem('token', data.token);
+                await AsyncStorage.setItem('user', JSON.stringify(data.user));
                 navigation.replace('Main');
             }
-        } catch (err) {
+        } catch (err: any) {
             setError('Could not reach the server. Check your connection.');
         } finally {
             setLoading(false);

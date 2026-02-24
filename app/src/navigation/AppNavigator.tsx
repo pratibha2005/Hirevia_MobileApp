@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
@@ -53,6 +54,7 @@ function MainTabs() {
 
 export default function AppNavigator() {
     return (
+        <SafeAreaProvider>
         <NavigationContainer>
             <Stack.Navigator
                 initialRouteName="Login"
@@ -68,10 +70,19 @@ export default function AppNavigator() {
                 {/* Main Tab Stack */}
                 <Stack.Screen name="Main" component={MainTabs} />
 
-                {/* Nested flow screens, hidden tab bar when deep inside */}
-                <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
-                <Stack.Screen name="ApplyFlow" component={ApplyFlowScreen} />
+                {/* Detail screens with custom header off (screen handles its own header) */}
+                <Stack.Screen
+                    name="JobDetails"
+                    component={JobDetailsScreen}
+                    options={{ gestureEnabled: true, fullScreenGestureEnabled: true }}
+                />
+                <Stack.Screen
+                    name="ApplyFlow"
+                    component={ApplyFlowScreen}
+                    options={{ gestureEnabled: true, fullScreenGestureEnabled: true }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
+        </SafeAreaProvider>
     );
 }

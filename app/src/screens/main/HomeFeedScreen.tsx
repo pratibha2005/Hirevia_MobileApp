@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../../api/config';
 
 const THEME = {
     primary: '#0F4C5C',
     primaryForeground: '#FFFFFF',
-    accent: '#E2725B',   // Muted Burnt Sienna
+    accent: '#E2725B',
     background: '#F9FAFB',
     surface: '#FFFFFF',
     text: '#12171A',
@@ -14,44 +17,52 @@ const THEME = {
     border: '#E5E7EB',
 };
 
-const MOCK_JOBS = [
-    {
-        id: '1',
-        title: 'Senior Frontend Engineer',
-        company: 'Stripe',
-        location: 'San Francisco, CA (Hybrid)',
-        salary: '$140k - $180k',
-        type: 'Full-time',
-        tags: ['React Native', 'Next.js', 'TypeScript'],
-        logo: 'https://ui-avatars.com/api/?name=Stripe&background=0D2B3E&color=fff&size=120'
-    },
-    {
-        id: '2',
-        title: 'Product Designer',
-        company: 'Linear',
-        location: 'Remote',
-        salary: '$120k - $160k',
-        type: 'Full-time',
-        tags: ['Figma', 'UI/UX', 'Prototyping'],
-        logo: 'https://ui-avatars.com/api/?name=Linear&background=5E6AD2&color=fff&size=120'
-    },
-    {
-        id: '3',
-        title: 'Backend Developer',
-        company: 'Vercel',
-        location: 'New York, NY',
-        salary: '$130k - $170k',
-        type: 'Contract',
-        tags: ['Node.js', 'Go', 'AWS'],
-        logo: 'https://ui-avatars.com/api/?name=Vercel&background=000&color=fff&size=120'
-    }
-];
-
-const CATEGORIES = ['All Roles', 'Engineering', 'Design', 'Product', 'Marketing'];
+const CATEGORIES = ['All', 'Engineering', 'Design', 'Product', 'Marketing'];
 
 export default function HomeFeedScreen() {
     const navigation = useNavigation<any>();
-    const [activeCategory, setActiveCategory] = useState('All Roles');
+    const [activeCategory, setActiveCategory] = useState('All');
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [userName, setUserName] = useState('there');
+
+    const fetchJobs = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/jobs`);
+            const data = await res.json();
+            if (data.success) {
+                setJobs(data.jobs.map((j: any) => ({
+                    id: j._id,
+                    title: j.title,
+                    company: j.companyId?.name || 'Unknown Company',
+                    location: j.location,
+                    salary: j.salary || 'Salary not disclosed',
+                    type: j.type || 'Full-time',
+                    tags: j.skills || [],
+                    logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(j.companyId?.name || 'C')}&background=0F4C5C&color=fff&size=120`,
+                    description: j.description,
+                    screeningQuestions: j.screeningQuestions || [],
+                })));
+            }
+        } catch (e) {
+            console.error('Failed to fetch jobs', e);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchJobs();
+        AsyncStorage.getItem('user').then(u => {
+            if (u) {
+                const parsed = JSON.parse(u);
+                setUserName(parsed.name?.split(' ')[0] || 'there');
+            }
+        });
+    }, []);
 
     const renderJobCard = ({ item }: { item: typeof MOCK_JOBS[0] }) => (
         <TouchableOpacity
@@ -96,10 +107,10 @@ export default function HomeFeedScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.greeting}>Good morning, Alex</Text>
+                    <Text style={styles.greeting}>Hello, {userName} 👋</Text>
                     <Text style={styles.headerSubtitle}>Find your dream job today</Text>
                 </View>
                 <TouchableOpacity style={styles.notificationBtn}>
@@ -137,13 +148,27 @@ export default function HomeFeedScreen() {
             </View>
 
             <FlatList
-                data={MOCK_JOBS}
+                data={jobs}
                 keyExtractor={(item) => item.id}
                 renderItem={renderJobCard}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchJobs(true)} tintColor={THEME.primary} />}
                 ListHeaderComponent={
-                    <Text style={styles.sectionTitle}>Recommended for you</Text>
+                    <Text style={styles.sectionTitle}>
+                        {loading ? 'Loading jobs...' : `${jobs.length} job${jobs.length !== 1 ? 's' : ''} available`}
+                    </Text>
+                }
+                ListEmptyComponent={
+                    loading ? (
+                        <ActivityIndicator size="large" color={THEME.primary} style={{ marginTop: 40 }} />
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <Ionicons name="briefcase-outline" size={48} color={THEME.textMuted} />
+                            <Text style={styles.emptyText}>No jobs available right now.</Text>
+                            <Text style={styles.emptySubtext}>Pull down to refresh.</Text>
+                        </View>
+                    )
                 }
             />
         </SafeAreaView>
@@ -181,4 +206,7 @@ const styles = StyleSheet.create({
     tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 16, borderTopWidth: 1, borderTopColor: THEME.border },
     tagBadge: { backgroundColor: '#F3F4F6', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
     tagText: { fontSize: 12, fontWeight: '600', color: THEME.textMuted },
+    emptyState: { alignItems: 'center', marginTop: 60, paddingHorizontal: 20 },
+    emptyText: { fontSize: 18, fontWeight: '700', color: THEME.text, marginTop: 16 },
+    emptySubtext: { fontSize: 14, color: THEME.textMuted, marginTop: 6 },
 });

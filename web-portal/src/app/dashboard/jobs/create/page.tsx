@@ -4,12 +4,24 @@ import { useRouter } from 'next/navigation'
 import { Plus, Trash2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import Link from 'next/link'
+import { API_BASE_URL } from '@/lib/apiClient'
 
 export default function CreateJobPage() {
     const router = useRouter()
+
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
+    const [location, setLocation] = useState('')
+    const [workModel, setWorkModel] = useState('Remote')
+    const [salary, setSalary] = useState('')
+    const [noticePeriod, setNoticePeriod] = useState('Immediate')
+    const [currentCTCRequired, setCurrentCTCRequired] = useState(false)
+    const [relocationRequired, setRelocationRequired] = useState(false)
+    const [skillsInput, setSkillsInput] = useState('')
     const [questions, setQuestions] = useState([{ id: 1, text: '', type: 'Text' }])
+    const [maxApplications, setMaxApplications] = useState('')
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
     const addQuestion = () => {
         setQuestions([...questions, { id: Date.now(), text: '', type: 'Text' }])
@@ -19,13 +31,35 @@ export default function CreateJobPage() {
         setQuestions(questions.filter(q => q.id !== id))
     }
 
-    const handlePublish = (e: React.FormEvent) => {
+    const handlePublish = async (e: React.FormEvent) => {
         e.preventDefault()
+        setError('')
         setLoading(true)
-        setTimeout(() => {
-            setLoading(false)
-            router.push('/dashboard/jobs')
-        }, 1000)
+
+        const token = localStorage.getItem('token')
+        if (!token) { router.push('/login'); return }
+
+        const skills = skillsInput.split(',').map(s => s.trim()).filter(Boolean)
+        const screeningQuestions = questions.map(q => q.text).filter(Boolean)
+        const fullLocation = workModel === 'Remote' ? 'Remote' : location ? `${location} (${workModel})` : workModel
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/jobs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    title, description, location: fullLocation, salary,
+                    type: 'Full-time', skills, screeningQuestions,
+                    maxApplications: maxApplications ? Number(maxApplications) : undefined,
+                    currentCTCRequired, relocationRequired,
+                    noticePeriodRequired: noticePeriod !== 'Immediate',
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) { setError(data.message || 'Failed to create job.') }
+            else { router.push('/dashboard/jobs') }
+        } catch { setError('Could not reach the server.') }
+        finally { setLoading(false) }
     }
 
     return (
@@ -51,7 +85,7 @@ export default function CreateJobPage() {
                     <div className="space-y-4">
                         <div className="space-y-1.5 flex flex-col">
                             <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Job Title</label>
-                            <Input placeholder="e.g. Senior Frontend Engineer" required />
+                            <Input placeholder="e.g. Senior Frontend Engineer" required value={title} onChange={e => setTitle(e.target.value)} />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
                             <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Description</label>
@@ -59,21 +93,27 @@ export default function CreateJobPage() {
                                 className="flex min-h-[120px] w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
                                 placeholder="Describe the role, responsibilities, and what you're looking for..."
                                 required
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Location</label>
-                                <Input placeholder="e.g. San Francisco, CA" required />
+                                <Input placeholder="e.g. San Francisco, CA" value={location} onChange={e => setLocation(e.target.value)} />
                             </div>
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Work Model</label>
-                                <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all">
+                                <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" value={workModel} onChange={e => setWorkModel(e.target.value)}>
                                     <option>Remote</option>
                                     <option>Hybrid</option>
                                     <option>On-site</option>
                                 </select>
                             </div>
+                        </div>
+                        <div className="space-y-1.5 flex flex-col">
+                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Skills / Tags (comma-separated)</label>
+                            <Input placeholder="e.g. React, TypeScript, Node.js" value={skillsInput} onChange={e => setSkillsInput(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -87,12 +127,12 @@ export default function CreateJobPage() {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Expected CTC (LPA)</label>
-                            <Input placeholder="e.g. 15-25" />
+                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Salary / CTC Range</label>
+                            <Input placeholder="e.g. ₹15-25 LPA or $120k-$160k" value={salary} onChange={e => setSalary(e.target.value)} />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Notice Period (Days)</label>
-                            <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all">
+                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Notice Period</label>
+                            <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" value={noticePeriod} onChange={e => setNoticePeriod(e.target.value)}>
                                 <option>Immediate</option>
                                 <option>15 Days</option>
                                 <option>30 Days</option>
@@ -102,11 +142,11 @@ export default function CreateJobPage() {
 
                         <div className="col-span-2 flex items-center gap-8 pt-2">
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" className="w-5 h-5 rounded text-[var(--primary)] focus:ring-[var(--primary)] accent-[var(--primary)]" />
+                                <input type="checkbox" className="w-5 h-5 rounded accent-[var(--primary)]" checked={currentCTCRequired} onChange={e => setCurrentCTCRequired(e.target.checked)} />
                                 <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">Current CTC Required</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" className="w-5 h-5 rounded text-[var(--primary)] focus:ring-[var(--primary)] accent-[var(--primary)]" />
+                                <input type="checkbox" className="w-5 h-5 rounded accent-[var(--primary)]" checked={relocationRequired} onChange={e => setRelocationRequired(e.target.checked)} />
                                 <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">Relocation Required</span>
                             </label>
                         </div>
@@ -185,13 +225,14 @@ export default function CreateJobPage() {
 
                     <div className="space-y-1.5 flex flex-col max-w-xs">
                         <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Max Applications Allowed</label>
-                        <Input type="number" placeholder="e.g. 500 (Leave empty for no limit)" min="1" />
+                        <Input type="number" placeholder="Leave empty for no limit" min="1"
+                            value={maxApplications} onChange={e => setMaxApplications(e.target.value)} />
                     </div>
                 </div>
 
                 <div className="flex justify-end pt-4 pb-20">
                     <div className="flex items-center gap-4">
-                        <Button type="button" variant="ghost" className="text-[var(--muted-foreground)]">Save as Draft</Button>
+                        {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
                         <Button type="submit" size="lg" disabled={loading} className="gap-2 px-8 shadow-md hover:shadow-lg">
                             {loading ? "Publishing..." : <><CheckCircle2 className="w-5 h-5" /> Publish Job</>}
                         </Button>
