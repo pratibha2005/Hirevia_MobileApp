@@ -2,6 +2,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { API_BASE_URL } from "@/lib/apiClient"
@@ -43,51 +44,62 @@ export default function RegisterPage() {
 
     return (
         <div className="space-y-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)]">Register Company</h1>
-                <p className="text-[var(--muted-foreground)] text-sm tracking-wide">
+            <div className="space-y-2 mb-2">
+                <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Register Company</h1>
+                <p className="text-[var(--muted-foreground)] text-sm font-medium">
                     Create your HR account to start hiring on Hirevia.
                 </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5 flex flex-col">
-                    <label className="text-xs font-semibold tracking-wider text-[var(--muted-foreground)] uppercase">Your Full Name</label>
+                    <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Your Full Name</label>
                     <Input placeholder="Jane Smith" required disabled={loading}
-                        value={name} onChange={e => setName(e.target.value)} />
+                        value={name} onChange={e => setName(e.target.value)}
+                        className="h-12 bg-[var(--surface)] border-[var(--border)] focus:bg-[var(--background)] transition-colors" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5 flex flex-col">
+                        <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Company Name</label>
+                        <Input placeholder="Acme Corp" required disabled={loading}
+                            value={companyName} onChange={e => setCompanyName(e.target.value)}
+                            className="h-12 bg-[var(--surface)] border-[var(--border)] focus:bg-[var(--background)] transition-colors" />
+                    </div>
+                    <div className="space-y-1.5 flex flex-col">
+                        <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Email Domain</label>
+                        <Input placeholder="acme.com" required disabled={loading}
+                            value={companyEmailDomain} onChange={e => setCompanyEmailDomain(e.target.value)}
+                            className="h-12 bg-[var(--surface)] border-[var(--border)] focus:bg-[var(--background)] transition-colors" />
+                    </div>
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                    <label className="text-xs font-semibold tracking-wider text-[var(--muted-foreground)] uppercase">Work Email</label>
+                    <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Work Email</label>
                     <Input type="email" placeholder="jane@company.com" required disabled={loading}
-                        value={email} onChange={e => setEmail(e.target.value)} />
+                        value={email} onChange={e => setEmail(e.target.value)}
+                        className="h-12 bg-[var(--surface)] border-[var(--border)] focus:bg-[var(--background)] transition-colors" />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                    <label className="text-xs font-semibold tracking-wider text-[var(--muted-foreground)] uppercase">Password</label>
+                    <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Password</label>
                     <Input type="password" placeholder="••••••••" required disabled={loading}
-                        value={password} onChange={e => setPassword(e.target.value)} />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                    <label className="text-xs font-semibold tracking-wider text-[var(--muted-foreground)] uppercase">Company Name</label>
-                    <Input placeholder="Acme Corp" required disabled={loading}
-                        value={companyName} onChange={e => setCompanyName(e.target.value)} />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                    <label className="text-xs font-semibold tracking-wider text-[var(--muted-foreground)] uppercase">Company Email Domain</label>
-                    <Input placeholder="acme.com" required disabled={loading}
-                        value={companyEmailDomain} onChange={e => setCompanyEmailDomain(e.target.value)} />
+                        value={password} onChange={e => setPassword(e.target.value)}
+                        className="h-12 bg-[var(--surface)] border-[var(--border)] focus:bg-[var(--background)] transition-colors" />
                 </div>
 
-                {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+                {error && (
+                    <div className="p-3 rounded-md bg-red-950/30 border border-red-900/50">
+                        <p className="text-sm text-red-400 font-medium">{error}</p>
+                    </div>
+                )}
 
-                <Button className="w-full" size="lg" type="submit" disabled={loading}>
+                <Button className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all mt-2" type="submit" disabled={loading}>
                     {loading ? 'Creating Account...' : 'Register'}
                 </Button>
             </form>
 
-            <div className="pt-6 border-t border-[var(--border)] text-center">
+            <div className="pt-6 border-t border-[var(--border)] mt-6">
                 <p className="text-sm font-medium text-[var(--muted-foreground)]">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-[var(--primary)] font-semibold hover:underline transition-colors">Sign In</Link>
+                    <Link href="/login" className="text-[var(--primary)] font-bold hover:underline transition-colors">Sign In</Link>
                 </p>
             </div>
         </div>

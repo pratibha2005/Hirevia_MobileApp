@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
-    ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Alert
+    ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Alert, Image
 } from 'react-native';
 import { API_BASE_URL } from '../../api/config';
 
@@ -60,12 +60,15 @@ export default function RegisterScreen({ navigation }: any) {
             >
                 <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                     <View style={styles.header}>
-                        <Text style={styles.logo}>Hirevia</Text>
-                        <Text style={styles.subtitle}>Find your next opportunity</Text>
+                        <Image source={require('../../../assets/images/Logo.jpg')} style={styles.logoImage} />
+                        <View>
+                            <Text style={styles.logo}>Hirevia</Text>
+                            <Text style={styles.subtitle}>Applicant Portal</Text>
+                        </View>
                     </View>
 
-                    <View style={styles.form}>
-                        <Text style={styles.title}>Create Applicant Account</Text>
+                    <View style={styles.formContainer}>
+                        <Text style={styles.title}>Create Account</Text>
                         <Text style={styles.description}>Join Hirevia to discover and apply for jobs.</Text>
 
                         <View style={styles.inputGroup}>
@@ -126,7 +129,7 @@ export default function RegisterScreen({ navigation }: any) {
                             {loading ? (
                                 <ActivityIndicator color={THEME.primaryForeground} />
                             ) : (
-                                <Text style={styles.buttonText}>Create Account</Text>
+                                <Text style={styles.buttonText}>Register</Text>
                             )}
                         </TouchableOpacity>
 
@@ -142,20 +145,21 @@ export default function RegisterScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: THEME.background },
-    container: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 32, justifyContent: 'center' },
-    header: { marginBottom: 32, alignItems: 'flex-start' },
-    logo: { fontSize: 28, fontWeight: '800', color: THEME.primary, letterSpacing: -0.5 },
-    subtitle: { fontSize: 14, color: THEME.textMuted, marginTop: 4, fontWeight: '500' },
-    form: { backgroundColor: THEME.surface, padding: 32, borderRadius: THEME.radius, borderWidth: 1, borderColor: THEME.border, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
-    title: { fontSize: 24, fontWeight: '700', color: THEME.text, marginBottom: 8, letterSpacing: -0.5 },
-    description: { fontSize: 14, color: THEME.textMuted, marginBottom: 24, lineHeight: 20 },
+    container: { flexGrow: 1, paddingHorizontal: 32, paddingVertical: 48, justifyContent: 'center' },
+    header: { marginBottom: 48, flexDirection: 'row', alignItems: 'center', gap: 16 },
+    logoImage: { width: 48, height: 48, borderRadius: 12 },
+    logo: { fontSize: 26, fontWeight: '800', color: THEME.primary, letterSpacing: -0.5 },
+    subtitle: { fontSize: 12, color: THEME.textMuted, marginTop: 2, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
+    formContainer: { width: '100%' },
+    title: { fontSize: 32, fontWeight: '800', color: THEME.text, marginBottom: 8, letterSpacing: -1 },
+    description: { fontSize: 15, color: THEME.textMuted, marginBottom: 32, lineHeight: 22 },
     inputGroup: { marginBottom: 20 },
-    label: { fontSize: 11, fontWeight: '700', color: THEME.textMuted, marginBottom: 8, letterSpacing: 0.5 },
-    input: { backgroundColor: THEME.background, borderWidth: 1, borderColor: THEME.border, borderRadius: THEME.radius, padding: 14, fontSize: 15, color: THEME.text, fontWeight: '500' },
-    errorText: { color: '#E53E3E', fontSize: 13, marginBottom: 8, textAlign: 'center' },
-    button: { backgroundColor: THEME.primary, paddingVertical: 16, borderRadius: THEME.radius, alignItems: 'center', marginTop: 8 },
-    buttonText: { color: THEME.primaryForeground, fontWeight: '600', fontSize: 15, letterSpacing: 0.5 },
-    linkContainer: { marginTop: 24, alignItems: 'center' },
-    linkText: { color: THEME.textMuted, fontSize: 14 },
-    linkHighlight: { color: THEME.primary, fontWeight: '600' }
+    label: { fontSize: 12, fontWeight: '700', color: THEME.textMuted, marginBottom: 8, letterSpacing: 1 },
+    input: { backgroundColor: THEME.surface, borderWidth: 1, borderColor: THEME.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 18, fontSize: 16, color: THEME.text, fontWeight: '500', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
+    errorText: { color: '#E53E3E', fontSize: 14, marginBottom: 16, fontWeight: '500' },
+    button: { backgroundColor: THEME.primary, paddingVertical: 18, borderRadius: 12, alignItems: 'center', marginTop: 12, shadowColor: THEME.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
+    buttonText: { color: THEME.primaryForeground, fontWeight: '700', fontSize: 16, letterSpacing: 0.5 },
+    linkContainer: { marginTop: 32, alignItems: 'center' },
+    linkText: { color: THEME.textMuted, fontSize: 15 },
+    linkHighlight: { color: THEME.primary, fontWeight: '700' }
 });

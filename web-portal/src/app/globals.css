@@ -4,34 +4,93 @@
 
 @layer base {
   :root {
-    --background: #FAFAFA;
-    --foreground: #12171A;
+    /* ─── Logo-derived palette: deep navy + teal-mint + ocean blue ─── */
+    --background: #060D18;
+    --surface: #0B1729;
 
-    --primary: #0F4C5C;
-    --primary-foreground: #FFFFFF;
+    --foreground: #DFF0FA;
 
-    --accent: #E2725B;
+    --primary: #5EC8B4;
+    /* Teal-mint from logo */
+    --primary-ch: 94 200 180;
+    --primary-foreground: #060D18;
+
+    --accent: #2589C3;
+    /* Ocean blue from logo */
+    --accent-ch: 37 137 195;
     --accent-foreground: #FFFFFF;
 
-    --muted: #F8F9FA;
-    --muted-foreground: #4A5568;
+    --muted: #0F1E30;
+    --muted-ch: 15 30 48;
+    --muted-foreground: #6A90AE;
 
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #0F4C5C;
+    --border: #162637;
+    --input: #162637;
+    --ring: #5EC8B4;
 
-    --radius: 0.375rem; /* 6px radius */
+    --radius: 0.5rem;
   }
 }
 
 @layer base {
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] font-sans antialiased selection:bg-teal-100 selection:text-teal-900;
+    @apply bg-[var(--background)] text-[var(--foreground)] font-sans antialiased;
+  }
+
+  ::selection {
+    background: rgba(94, 200, 180, 0.25);
+    color: #DFF0FA;
+  }
+
+  * {
+    border-color: var(--border);
   }
 }
 
 @layer utilities {
+  /* Glass card surface */
   .subtle-glass {
-    @apply bg-white/90 backdrop-blur-sm border border-[var(--border)] shadow-sm;
+    background: rgba(11, 23, 41, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(94, 200, 180, 0.04);
+  }
+
+  /* Scanline grid texture */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgba(94, 200, 180, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(94, 200, 180, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Teal glow accent */
+  .glow-effect {
+    box-shadow: 0 0 0 1px rgba(94, 200, 180, 0.12), 0 0 24px rgba(94, 200, 180, 0.08), 0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Strong primary glow for interactive elements */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(94, 200, 180, 0.3), 0 0 40px rgba(94, 200, 180, 0.1);
+  }
+
+  /* Horizontal accent divider line */
+  .accent-line {
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    height: 1px;
+  }
+
+  /* Futuristic corner-cut card */
+  .card-futuristic {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+
+  /* Text glow */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(94, 200, 180, 0.5);
   }
 }
