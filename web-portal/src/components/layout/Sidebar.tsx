@@ -2,13 +2,13 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Briefcase, Users, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, Briefcase, Users, Settings, LogOut, CalendarDays } from "lucide-react"
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Jobs", href: "/dashboard/jobs", icon: Briefcase },
     { name: "Applications", href: "/dashboard/applications", icon: Users },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Interviews", href: "/dashboard/interviews", icon: CalendarDays },
 ]
 
 export function Sidebar() {
@@ -16,7 +16,7 @@ export function Sidebar() {
 
     return (
         <div className="flex flex-col w-64 min-h-screen border-r border-[var(--border)] relative"
-            style={{ background: 'linear-gradient(180deg, #0B1729 0%, #060D18 100%)' }}>
+            style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%)' }}>
 
             {/* Logo */}
             <div className="flex items-center gap-3 px-5 h-16 border-b border-[var(--border)]">
@@ -49,6 +49,47 @@ export function Sidebar() {
                         </Link>
                     )
                 })}
+
+                <div className="relative group">
+                    <div
+                        className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                            pathname.startsWith('/dashboard/settings')
+                                ? "bg-primary-ch/10 text-[var(--primary)] border-primary-ch/20"
+                                : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] border-transparent"
+                        }`}
+                    >
+                        {pathname.startsWith('/dashboard/settings') && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[var(--primary)] rounded-r-full" />
+                        )}
+                        <Settings className="w-4 h-4 shrink-0" />
+                        Settings
+                    </div>
+
+                    {/* <div className="hidden group-hover:block pl-6 pr-2 pt-1.5 pb-1">
+                        <Link
+                            href="/dashboard/settings/edit-profile"
+                            className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                                pathname === '/dashboard/settings/edit-profile'
+                                    ? 'text-[var(--primary)] bg-primary-ch/10 border border-primary-ch/20'
+                                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] border border-transparent'
+                            }`}
+                        >
+                            Edit Profile
+                        </Link>
+                    </div> */}
+                    <div className="absolute left-full top-0 ml-2 hidden group-hover:block w-40 bg-white shadow-lg rounded-md border border-[var(--border)] z-50">
+    <Link
+        href="/dashboard/settings/edit-profile"
+        className={`block px-4 py-2 rounded-md text-sm transition-colors ${
+            pathname === '/dashboard/settings/edit-profile'
+                ? 'text-black bg-primary-ch/10'
+                : 'text-black hover:text-[var(--foreground)] hover:bg-[var(--muted)]'
+        }`}
+    >
+        Edit Profile
+    </Link>
+</div>
+                </div>
             </nav>
 
             <div className="p-3 border-t border-[var(--border)]">

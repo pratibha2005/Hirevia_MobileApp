@@ -40,6 +40,19 @@ This is built using a classic Layered Architecture:
    ```
 *(Note: A `.env` file must exist locally at `backend/.env` with `PORT`, `MONGODB_URI`, and `JWT_SECRET`.)*
 
+For interview email notifications (candidate receives scheduled interview mail), also add:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-login@example.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-smtp-login@example.com
+```
+
+Interview notification mail uses `SMTP_FROM` (or `SMTP_USER`) as sender for better deliverability, and keeps recruiter signup email in `reply-to` so candidate replies go to recruiter.
+
 ---
 
 ## 2. Web Portal (Next.js - HR Dashboard)

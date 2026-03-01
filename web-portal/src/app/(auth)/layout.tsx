@@ -5,8 +5,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     return (
         <div className="min-h-screen bg-[var(--background)] flex flex-col md:flex-row">
             {/* Left structural branding panel */}
-            <div className="hidden md:flex flex-col justify-between w-[45%] lg:w-[42%] text-white p-12 relative overflow-hidden"
-                style={{ background: 'linear-gradient(160deg, #0B1729 0%, #060D18 60%, #081420 100%)' }}>
+            <div className="hidden md:flex flex-col justify-between w-[45%] lg:w-[42%] p-12 relative overflow-hidden"
+                style={{ background: 'linear-gradient(160deg, #ffffff 0%, #f9fafb 60%, #f3f4f6 100%)' }}>
 
                 {/* Grid texture */}
                 <div className="absolute inset-0 bg-grid-pattern pointer-events-none" />

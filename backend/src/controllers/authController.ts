@@ -103,7 +103,102 @@ export const login = async (req: Request, res: Response) => {
         return res.status(200).json({
             success: true,
             token,
-            user: { id: user._id, name: user.name, email: user.email, role: user.role, companyId: user.companyId },
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                companyId: user.companyId,
+                profileImage: user.profileImage,
+            },
+        });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// GET /api/auth/profile
+export const getProfile = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Authentication required' });
+        }
+
+        const user = await User.findById(userId).populate('companyId', 'name');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const companyName =
+            user.role === 'HR' && user.companyId && typeof user.companyId === 'object' && 'name' in user.companyId
+                ? (user.companyId as any).name
+                : undefined;
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                companyId: user.companyId,
+                companyName,
+                profileImage: user.profileImage,
+            },
+        });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// PUT /api/auth/profile
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Authentication required' });
+        }
+
+        const { name, profileImage } = req.body;
+
+        if (!name || typeof name !== 'string' || !name.trim()) {
+            return res.status(400).json({ success: false, message: 'Name is required' });
+        }
+
+        if (profileImage && typeof profileImage !== 'string') {
+            return res.status(400).json({ success: false, message: 'Invalid profile image format' });
+        }
+
+        const user = await User.findById(userId).populate('companyId', 'name');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.name = name.trim();
+        if (typeof profileImage === 'string') {
+            user.profileImage = profileImage;
+        }
+
+        await user.save();
+
+        const companyName =
+            user.role === 'HR' && user.companyId && typeof user.companyId === 'object' && 'name' in user.companyId
+                ? (user.companyId as any).name
+                : undefined;
+
+        return res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                companyId: user.companyId,
+                companyName,
+                profileImage: user.profileImage,
+            },
         });
     } catch (err: any) {
         return res.status(500).json({ success: false, message: err.message });

@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    /* ─── Logo-derived palette: deep navy + teal-mint + ocean blue ─── */
-    --background: #060D18;
-    --surface: #0B1729;
+    /* ─── Light neutral palette ─── */
+    --background: #ffffff;
+    --surface: #ffffff;
 
-    --foreground: #DFF0FA;
+    --foreground: #1f2937;
 
     --primary: #5EC8B4;
     /* Teal-mint from logo */
     --primary-ch: 94 200 180;
-    --primary-foreground: #060D18;
+    --primary-foreground: #ffffff;
 
     --accent: #2589C3;
     /* Ocean blue from logo */
     --accent-ch: 37 137 195;
-    --accent-foreground: #FFFFFF;
+    --accent-foreground: #ffffff;
 
-    --muted: #0F1E30;
-    --muted-ch: 15 30 48;
-    --muted-foreground: #6A90AE;
+    --muted: #f3f4f6;
+    --muted-ch: 243 244 246;
+    --muted-foreground: #6b7280;
 
-    --border: #162637;
-    --input: #162637;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
     --ring: #5EC8B4;
 
     --radius: 0.5rem;
@@ -39,7 +39,7 @@
 
   ::selection {
     background: rgba(94, 200, 180, 0.25);
-    color: #DFF0FA;
+    color: #1f2937;
   }
 
   * {
@@ -50,29 +50,29 @@
 @layer utilities {
   /* Glass card surface */
   .subtle-glass {
-    background: rgba(11, 23, 41, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border);
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(94, 200, 180, 0.04);
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 
   /* Scanline grid texture */
   .bg-grid-pattern {
     background-image:
-      linear-gradient(to right, rgba(94, 200, 180, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(94, 200, 180, 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgba(37, 137, 195, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(37, 137, 195, 0.07) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   /* Teal glow accent */
   .glow-effect {
-    box-shadow: 0 0 0 1px rgba(94, 200, 180, 0.12), 0 0 24px rgba(94, 200, 180, 0.08), 0 4px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 1px rgba(94, 200, 180, 0.14), 0 0 18px rgba(94, 200, 180, 0.08), 0 8px 28px rgba(15, 23, 42, 0.08);
   }
 
   /* Strong primary glow for interactive elements */
   .glow-primary {
-    box-shadow: 0 0 20px rgba(94, 200, 180, 0.3), 0 0 40px rgba(94, 200, 180, 0.1);
+    box-shadow: 0 0 16px rgba(94, 200, 180, 0.22), 0 0 32px rgba(94, 200, 180, 0.1);
   }
 
   /* Horizontal accent divider line */
@@ -91,6 +91,6 @@
 
   /* Text glow */
   .text-glow {
-    text-shadow: 0 0 20px rgba(94, 200, 180, 0.5);
+    text-shadow: 0 0 14px rgba(94, 200, 180, 0.35);
   }
 }
