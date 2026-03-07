@@ -1,34 +1,78 @@
 import { Request, Response } from 'express';
 import Application from '../models/Application';
 import Job from '../models/Job';
+import ApplicantProfile from '../models/ApplicantProfile';
 
 // POST /api/applications — APPLICANT applies to a job
 export const applyToJob = async (req: Request, res: Response) => {
     try {
-        const { jobId, screeningAnswers } = req.body;
+        console.log('📝 Application submission received');
+        console.log('👤 Applicant ID:', req.user!.userId);
+        console.log('📦 Request body:', req.body);
+        console.log('📄 File uploaded:', req.file ? req.file.filename : 'No file');
+        
+        const { jobId, useExistingResume } = req.body;
+        let screeningAnswers = req.body.screeningAnswers;
 
-        if (!jobId)
+        // Parse screeningAnswers if it's a string (from FormData)
+        if (typeof screeningAnswers === 'string') {
+            try {
+                screeningAnswers = JSON.parse(screeningAnswers);
+            } catch {
+                screeningAnswers = [];
+            }
+        }
+
+        if (!jobId) {
+            console.log('❌ Missing jobId');
             return res.status(400).json({ success: false, message: 'jobId is required' });
+        }
 
         const job = await Job.findById(jobId);
-        if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
-        if (job.status !== 'Active')
+        if (!job) {
+            console.log('❌ Job not found:', jobId);
+            return res.status(404).json({ success: false, message: 'Job not found' });
+        }
+        if (job.status !== 'Active') {
+            console.log('❌ Job not active:', jobId);
             return res.status(400).json({ success: false, message: 'This job is no longer accepting applications' });
+        }
+
+        // Determine which resume to use
+        let resumeUrl = '';
+        
+        if (useExistingResume === 'true' || useExistingResume === true) {
+            // Use resume from applicant profile
+            console.log('📎 Using existing resume from profile');
+            const profile = await ApplicantProfile.findOne({ userId: req.user!.userId });
+            resumeUrl = profile?.resumeUrl || '';
+            console.log('📎 Profile resume URL:', resumeUrl);
+        } else if (req.file) {
+            // Use newly uploaded resume
+            resumeUrl = `/uploads/resumes/${req.file.filename}`;
+            console.log('📎 Using new uploaded resume:', resumeUrl);
+        } else {
+            console.log('⚠️ No resume provided');
+        }
 
         const application = await Application.create({
             jobId,
             applicantId: req.user!.userId,
-            resumeUrl: req.body.resumeUrl || '',
+            resumeUrl,
             screeningAnswers: screeningAnswers || [],
             status: 'New',
         });
 
         await Job.findByIdAndUpdate(jobId, { $inc: { applicationCount: 1 } });
 
+        console.log('✅ Application created:', application._id);
         return res.status(201).json({ success: true, application });
     } catch (err: any) {
-        if (err.code === 11000)
+        if (err.code === 11000) {
+            console.log('❌ Duplicate application for job:', req.body.jobId);
             return res.status(409).json({ success: false, message: 'You have already applied to this job' });
+        }
+        console.error('❌ Application error:', err);
         return res.status(500).json({ success: false, message: err.message });
     }
 };

@@ -7,10 +7,10 @@ const getBaseUrl = (): string => {
     const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest2?.extra?.expoGo?.debuggerHost;
     if (hostUri) {
         const host = hostUri.split(':')[0]; // strip the Metro port
-        return `http://${host}:5001`;
+        return `http://${host}:5000`;
     }
     // Emulator fallback
-    return 'http://10.0.2.2:5001';
+    return 'http://10.0.2.2:5000';
 };
 
 export const API_BASE_URL = getBaseUrl();
