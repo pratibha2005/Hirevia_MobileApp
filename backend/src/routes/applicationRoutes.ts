@@ -8,11 +8,12 @@ import {
 } from '../controllers/applicationController';
 import { requireAuth } from '../middlewares/authMiddleware';
 import { requireRole } from '../middlewares/roleMiddleware';
+import { uploadResume, handleMulterError } from '../middlewares/uploadMiddleware';
 
 const router = Router();
 
 // Applicant
-router.post('/', requireAuth, requireRole(['APPLICANT']), applyToJob);
+router.post('/', requireAuth, requireRole(['APPLICANT']), uploadResume.single('resume'), handleMulterError, applyToJob);
 router.get('/my', requireAuth, requireRole(['APPLICANT']), getMyApplications);
 
 // HR

@@ -3,6 +3,8 @@ import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Alert, Image
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../api/config';
 
 const THEME = {
@@ -22,8 +24,24 @@ export default function RegisterScreen({ navigation }: any) {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [resume, setResume] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const handlePickResume = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+                copyToCacheDirectory: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setResume(result.assets[0]);
+            }
+        } catch (err) {
+            Alert.alert('Error', 'Could not pick document.');
+        }
+    };
 
     const handleRegister = async () => {
         if (!fullName || !email || !password) {
@@ -33,10 +51,23 @@ export default function RegisterScreen({ navigation }: any) {
         setError('');
         setLoading(true);
         try {
+            const formData = new FormData();
+            formData.append('name', fullName);
+            formData.append('email', email);
+            formData.append('password', password);
+            if (phone) formData.append('phone', phone);
+            
+            if (resume) {
+                formData.append('resume', {
+                    uri: resume.uri,
+                    type: resume.mimeType || 'application/pdf',
+                    name: resume.name,
+                } as any);
+            }
+
             const res = await fetch(`${API_BASE_URL}/api/auth/register/applicant`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: fullName, email, phone, password }),
+                body: formData,
             });
             const data = await res.json();
             if (!res.ok) {
@@ -106,7 +137,29 @@ export default function RegisterScreen({ navigation }: any) {
                                 keyboardType="phone-pad"
                             />
                         </View>
+<View style={styles.inputGroup}>
+                            <Text style={styles.label}>RESUME (OPTIONAL)</Text>
+                            <TouchableOpacity
+                                style={styles.resumeButton}
+                                onPress={handlePickResume}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="document-attach" size={24} color={resume ? THEME.primary : THEME.textMuted} />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={[styles.resumeButtonText, resume && { color: THEME.primary }]}>
+                                        {resume ? resume.name : 'Upload Resume'}
+                                    </Text>
+                                    {resume && <Text style={styles.resumeSize}>{(resume.size! / 1024).toFixed(0)} KB</Text>}
+                                </View>
+                                {resume && (
+                                    <TouchableOpacity onPress={() => setResume(null)}>
+                                        <Ionicons name="close-circle" size={24} color={THEME.textMuted} />
+                                    </TouchableOpacity>
+                                )}
+                            </TouchableOpacity>
+                        </View>
 
+                        
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>PASSWORD</Text>
                             <TextInput
@@ -161,5 +214,8 @@ const styles = StyleSheet.create({
     buttonText: { color: THEME.primaryForeground, fontWeight: '700', fontSize: 16, letterSpacing: 0.5 },
     linkContainer: { marginTop: 32, alignItems: 'center' },
     linkText: { color: THEME.textMuted, fontSize: 15 },
-    linkHighlight: { color: THEME.primary, fontWeight: '700' }
+    linkHighlight: { color: THEME.primary, fontWeight: '700' },
+    resumeButton: { backgroundColor: THEME.surface, borderWidth: 1, borderColor: THEME.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
+    resumeButtonText: { fontSize: 16, color: THEME.textMuted, fontWeight: '500' },
+    resumeSize: { fontSize: 12, color: THEME.textMuted, marginTop: 2 }
 });

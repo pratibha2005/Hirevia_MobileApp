@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as DocumentPicker from 'expo-document-picker';
 import { API_BASE_URL } from '../../api/config';
 
 const THEME = {
@@ -28,6 +29,49 @@ export default function ApplyFlowScreen() {
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [answers, setAnswers] = useState<string[]>(questions.map(() => ''));
+    const [profileResumeUrl, setProfileResumeUrl] = useState<string | null>(null);
+    const [resumeOption, setResumeOption] = useState<'existing' | 'new'>('existing');
+    const [newResume, setNewResume] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
+
+    useEffect(() => {
+        fetchUserProfile();
+    }, []);
+
+    const fetchUserProfile = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (data.success && data.user.resumeUrl) {
+                setProfileResumeUrl(data.user.resumeUrl);
+            }
+        } catch (err) {
+            console.log('Failed to fetch profile');
+        } finally {
+            setLoadingProfile(false);
+        }
+    };
+
+    const handlePickResume = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+                copyToCacheDirectory: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setNewResume(result.assets[0]);
+                setResumeOption('new');
+            }
+        } catch (err) {
+            Alert.alert('Error', 'Could not pick document.');
+        }
+    };
 
     const handleNext = () => {
         if (step < totalSteps) {
@@ -52,18 +96,29 @@ export default function ApplyFlowScreen() {
                 return;
             }
 
-            const screeningAnswers = questions.map((q, i) => ({
+            const formData = new FormData();
+            formData.append('jobId', job.id);
+            formData.append('screeningAnswers', JSON.stringify(questions.map((q, i) => ({
                 question: q,
                 answer: answers[i] || '',
-            }));
+            }))));
+
+            if (resumeOption === 'existing') {
+                formData.append('useExistingResume', 'true');
+            } else if (newResume) {
+                formData.append('resume', {
+                    uri: newResume.uri,
+                    type: newResume.mimeType || 'application/pdf',
+                    name: newResume.name,
+                } as any);
+            }
 
             const res = await fetch(`${API_BASE_URL}/api/applications`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ jobId: job.id, screeningAnswers }),
+                body: formData,
             });
 
             const data = await res.json();
@@ -108,20 +163,74 @@ export default function ApplyFlowScreen() {
 
                 {step === 1 && (
                     <View style={styles.stepContainer}>
-                        <Text style={styles.stepTitle}>Review Your Profile</Text>
+                        <Text style={styles.stepTitle}>Choose Your Resume</Text>
                         <Text style={styles.stepSubtitle}>
                             You're applying for <Text style={{ color: THEME.primary, fontWeight: '700' }}>{job.title}</Text> at {job.company}.
                         </Text>
-                        <View style={styles.resumeCard}>
-                            <View style={styles.resumeIcon}>
-                                <Ionicons name="document-text" size={32} color={THEME.primary} />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.resumeName}>Profile Resume</Text>
-                                <Text style={styles.resumeTime}>Your profile will be shared with the recruiter</Text>
-                            </View>
-                            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                        </View>
+
+                        {loadingProfile ? (
+                            <ActivityIndicator size="large" color={THEME.primary} style={{ marginTop: 20 }} />
+                        ) : (
+                            <>
+                                {profileResumeUrl && (
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.resumeCard,
+                                            resumeOption === 'existing' && styles.resumeCardSelected
+                                        ]}
+                                        onPress={() => setResumeOption('existing')}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.resumeIcon}>
+                                            <Ionicons name="document-text" size={32} color={THEME.primary} />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.resumeName}>Profile Resume</Text>
+                                            <Text style={styles.resumeTime}>Resume from your profile</Text>
+                                        </View>
+                                        <Ionicons
+                                            name={resumeOption === 'existing' ? 'checkmark-circle' : 'radio-button-off'}
+                                            size={24}
+                                            color={resumeOption === 'existing' ? '#10B981' : THEME.textMuted}
+                                        />
+                                    </TouchableOpacity>
+                                )}
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.resumeCard,
+                                        { marginTop: profileResumeUrl ? 16 : 0 },
+                                        resumeOption === 'new' && styles.resumeCardSelected
+                                    ]}
+                                    onPress={handlePickResume}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={styles.resumeIcon}>
+                                        <Ionicons name="cloud-upload" size={32} color={THEME.accent} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.resumeName}>
+                                            {newResume ? newResume.name : 'Upload New Resume'}
+                                        </Text>
+                                        <Text style={styles.resumeTime}>
+                                            {newResume ? `${(newResume.size! / 1024).toFixed(0)} KB` : 'Choose a different resume'}
+                                        </Text>
+                                    </View>
+                                    <Ionicons
+                                        name={resumeOption === 'new' ? 'checkmark-circle' : 'add-circle'}
+                                        size={24}
+                                        color={resumeOption === 'new' ? '#10B981' : THEME.textMuted}
+                                    />
+                                </TouchableOpacity>
+
+                                {!profileResumeUrl && !newResume && (
+                                    <View style={styles.warningBox}>
+                                        <Ionicons name="warning" size={20} color="#F59E0B" />
+                                        <Text style={styles.warningText}>Please upload a resume to continue</Text>
+                                    </View>
+                                )}
+                            </>
+                        )}
                     </View>
                 )}
 
@@ -179,10 +288,13 @@ export default function ApplyFlowScreen() {
 
             <View style={styles.bottomBar}>
                 <TouchableOpacity
-                    style={styles.actionButton}
+                    style={[
+                        styles.actionButton,
+                        (step === 1 && !profileResumeUrl && !newResume) && styles.actionButtonDisabled
+                    ]}
                     activeOpacity={0.8}
                     onPress={handleNext}
-                    disabled={submitting}
+                    disabled={submitting || (step === 1 && !profileResumeUrl && !newResume)}
                 >
                     {submitting ? (
                         <ActivityIndicator color={THEME.primaryForeground} />
@@ -223,5 +335,9 @@ const styles = StyleSheet.create({
     summaryValue: { fontSize: 15, color: THEME.text, fontWeight: '600', maxWidth: '55%', textAlign: 'right' },
     bottomBar: { paddingHorizontal: 24, paddingVertical: 24, backgroundColor: THEME.surface, borderTopWidth: 1, borderTopColor: THEME.border },
     actionButton: { backgroundColor: THEME.primary, borderRadius: 16, paddingVertical: 18, alignItems: 'center', shadowColor: THEME.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+    actionButtonDisabled: { backgroundColor: THEME.textMuted, opacity: 0.5 },
     actionButtonText: { color: THEME.primaryForeground, fontSize: 17, fontWeight: '700', letterSpacing: 0.5 },
+    resumeCardSelected: { borderColor: THEME.primary, borderWidth: 2, backgroundColor: '#F0F9FF' },
+    warningBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', padding: 16, borderRadius: 12, marginTop: 16, gap: 12 },
+    warningText: { fontSize: 14, color: '#92400E', fontWeight: '600', flex: 1 },
 });
