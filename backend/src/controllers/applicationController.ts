@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Application from '../models/Application';
 import Job from '../models/Job';
 import ApplicantProfile from '../models/ApplicantProfile';
+import { sendApplicationStatusEmail } from '../services/emailService';
 
 // POST /api/applications — APPLICANT applies to a job
 export const applyToJob = async (req: Request, res: Response) => {
@@ -10,8 +11,8 @@ export const applyToJob = async (req: Request, res: Response) => {
         console.log('👤 Applicant ID:', req.user!.userId);
         console.log('📦 Request body:', req.body);
         console.log('📄 File uploaded:', req.file ? req.file.filename : 'No file');
-        
-        const { jobId, useExistingResume } = req.body;
+
+        const { jobId, useExistingResume, relocationAnswer, ctcAnswer } = req.body;
         let screeningAnswers = req.body.screeningAnswers;
 
         // Parse screeningAnswers if it's a string (from FormData)
@@ -40,7 +41,7 @@ export const applyToJob = async (req: Request, res: Response) => {
 
         // Determine which resume to use
         let resumeUrl = '';
-        
+
         if (useExistingResume === 'true' || useExistingResume === true) {
             // Use resume from applicant profile
             console.log('📎 Using existing resume from profile');
@@ -60,6 +61,8 @@ export const applyToJob = async (req: Request, res: Response) => {
             applicantId: req.user!.userId,
             resumeUrl,
             screeningAnswers: screeningAnswers || [],
+            relocationAnswer: relocationAnswer || undefined,
+            ctcAnswer: ctcAnswer || undefined,
             status: 'New',
         });
 
@@ -133,14 +136,32 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
         if (!valid.includes(status))
             return res.status(400).json({ success: false, message: 'Invalid status' });
 
-        const application = await Application.findById(req.params.id).populate<{ jobId: any }>('jobId');
+        const application = await Application.findById(req.params.id)
+            .populate<{ jobId: any }>({
+                path: 'jobId',
+                populate: { path: 'companyId', select: 'name emailDomain logoUrl' }
+            })
+            .populate<{ applicantId: any }>('applicantId', 'name email');
+
         if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
 
-        if (String(application.jobId.companyId) !== String(req.user!.companyId))
+        const companyId = application.jobId.companyId._id ? application.jobId.companyId._id : application.jobId.companyId;
+
+        if (String(companyId) !== String(req.user!.companyId))
             return res.status(403).json({ success: false, message: 'Forbidden' });
 
         application.status = status;
         await application.save();
+
+        if (status === 'Shortlisted' || status === 'Rejected') {
+            sendApplicationStatusEmail({
+                candidateName: application.applicantId.name,
+                candidateEmail: application.applicantId.email,
+                companyName: application.jobId.companyId.name,
+                jobTitle: application.jobId.title,
+                status: status as 'Shortlisted' | 'Rejected'
+            }).catch(e => console.error('Failed to send status email:', e));
+        }
 
         return res.json({ success: true, application });
     } catch (err: any) {

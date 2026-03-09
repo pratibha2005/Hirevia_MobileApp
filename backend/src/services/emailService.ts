@@ -14,6 +14,14 @@ type InterviewEmailPayload = {
     notes?: string;
 };
 
+export type ApplicationStatusEmailPayload = {
+    candidateName: string;
+    candidateEmail: string;
+    companyName: string;
+    jobTitle: string;
+    status: 'Shortlisted' | 'Rejected';
+};
+
 const getTransporter = () => {
     const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
@@ -92,6 +100,78 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         from: `${senderName} <${senderAddress}>`,
         to: payload.candidateEmail,
         replyTo: payload.recruiterEmail,
+        subject,
+        text,
+        html
+    });
+};
+
+export const sendApplicationStatusEmail = async (payload: ApplicationStatusEmailPayload) => {
+    const transporter = getTransporter();
+
+    const subject = payload.status === 'Shortlisted'
+        ? `Update on your application at ${payload.companyName}`
+        : `Update on your application at ${payload.companyName}`;
+
+    const senderAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@hirevia.com';
+    const senderName = payload.companyName;
+
+    let text = `Hi ${payload.candidateName},\n\n`;
+    let html = `
+        <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
+            <p>Hi ${payload.candidateName},</p>
+    `;
+
+    if (payload.status === 'Shortlisted') {
+        text += `Congratulations! Your application for the ${payload.jobTitle} position at ${payload.companyName} has been shortlisted.\n\nOur team will be in touch with you shortly with the next steps.`;
+        html += `
+            <p>Congratulations! Your application for the <strong>${payload.jobTitle}</strong> position at <strong>${payload.companyName}</strong> has been shortlisted.</p>
+            <p>Our team will be in touch with you shortly with the next steps.</p>
+        `;
+    } else {
+        text += `Thank you for your interest in the ${payload.jobTitle} position at ${payload.companyName}.\n\nWhile your background is impressive, we have decided to move forward with other candidates at this time.\n\nWe appreciate you taking the time to apply and wish you the best in your job search.`;
+        html += `
+            <p>Thank you for your interest in the <strong>${payload.jobTitle}</strong> position at <strong>${payload.companyName}</strong>.</p>
+            <p>While your background is impressive, we have decided to move forward with other candidates at this time.</p>
+            <p>We appreciate you taking the time to apply and wish you the best in your job search.</p>
+        `;
+    }
+
+    text += `\n\nBest regards,\nThe ${payload.companyName} Team`;
+    html += `
+            <p>Best regards,<br />The ${payload.companyName} Team</p>
+        </div>
+    `;
+
+    await transporter.sendMail({
+        from: `${senderName} <${senderAddress}>`,
+        to: payload.candidateEmail,
+        subject,
+        text,
+        html
+    });
+};
+
+export const sendOtpEmail = async (email: string, otp: string) => {
+    const transporter = getTransporter();
+
+    const subject = 'Hirevia - Email Verification OTP';
+    const senderAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@hirevia.com';
+    const senderName = 'Hirevia';
+
+    const text = `Your verification code is: ${otp}\n\nThis code will expire in 10 minutes.`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
+            <h2>Email Verification</h2>
+            <p>Your verification code is:</p>
+            <h1 style="letter-spacing: 5px; color: #0F4C5C;">${otp}</h1>
+            <p>This code will expire in 10 minutes.</p>
+        </div>
+    `;
+
+    await transporter.sendMail({
+        from: `${senderName} <${senderAddress}>`,
+        to: email,
         subject,
         text,
         html

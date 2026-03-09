@@ -6,7 +6,7 @@ export const createJob = async (req: Request, res: Response) => {
     try {
         const {
             title, description, location, salary, type, skills,
-            screeningQuestions, maxApplications,
+            screeningQuestions, maxApplications, noticePeriod,
             noticePeriodRequired, expectedCTCRequired, currentCTCRequired, relocationRequired
         } = req.body;
 
@@ -24,6 +24,7 @@ export const createJob = async (req: Request, res: Response) => {
             skills: skills || [],
             screeningQuestions: screeningQuestions || [],
             maxApplications: maxApplications || undefined,
+            noticePeriod: noticePeriod || undefined,
             noticePeriodRequired: noticePeriodRequired || false,
             expectedCTCRequired: expectedCTCRequired || false,
             currentCTCRequired: currentCTCRequired || false,

@@ -27,6 +27,10 @@ export default function RegisterScreen({ navigation }: any) {
     const [resume, setResume] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    
+    // OTP State
+    const [step, setStep] = useState<'DETAILS' | 'OTP'>('DETAILS');
+    const [otp, setOtp] = useState('');
 
     const handlePickResume = async () => {
         try {
@@ -73,7 +77,37 @@ export default function RegisterScreen({ navigation }: any) {
             if (!res.ok) {
                 setError(data.message || 'Registration failed.');
             } else {
-                Alert.alert('Account Created', `Welcome, ${data.user.name}!`);
+                // Instead of navigating, move to OTP step
+                setStep('OTP');
+                Alert.alert('Verification Code Sent', 'Please check your email for the OTP.');
+            }
+        } catch (err) {
+            setError('Could not reach the server. Check your connection.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length < 6) {
+            setError('Please enter a valid 6-digit OTP.');
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/register/verify-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, otp }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.message || 'Verification failed.');
+            } else {
+                Alert.alert('Account Verified', `Welcome, ${data.user.name}!`);
                 navigation.navigate('Login');
             }
         } catch (err) {
@@ -102,89 +136,130 @@ export default function RegisterScreen({ navigation }: any) {
                         <Text style={styles.title}>Create Account</Text>
                         <Text style={styles.description}>Join Hirevia to discover and apply for jobs.</Text>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>FULL NAME</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="John Doe"
-                                placeholderTextColor="#A0AEC0"
-                                value={fullName}
-                                onChangeText={setFullName}
-                            />
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>EMAIL ADDRESS</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="you@email.com"
-                                placeholderTextColor="#A0AEC0"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                            />
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>PHONE (OPTIONAL)</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="+1 234 567 8900"
-                                placeholderTextColor="#A0AEC0"
-                                value={phone}
-                                onChangeText={setPhone}
-                                keyboardType="phone-pad"
-                            />
-                        </View>
-<View style={styles.inputGroup}>
-                            <Text style={styles.label}>RESUME (OPTIONAL)</Text>
-                            <TouchableOpacity
-                                style={styles.resumeButton}
-                                onPress={handlePickResume}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons name="document-attach" size={24} color={resume ? THEME.primary : THEME.textMuted} />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.resumeButtonText, resume && { color: THEME.primary }]}>
-                                        {resume ? resume.name : 'Upload Resume'}
-                                    </Text>
-                                    {resume && <Text style={styles.resumeSize}>{(resume.size! / 1024).toFixed(0)} KB</Text>}
+                        {step === 'DETAILS' ? (
+                            <>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>FULL NAME</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="John Doe"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={fullName}
+                                        onChangeText={setFullName}
+                                    />
                                 </View>
-                                {resume && (
-                                    <TouchableOpacity onPress={() => setResume(null)}>
-                                        <Ionicons name="close-circle" size={24} color={THEME.textMuted} />
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>EMAIL ADDRESS</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="you@email.com"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        autoCapitalize="none"
+                                        keyboardType="email-address"
+                                    />
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>PHONE (OPTIONAL)</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="+1 234 567 8900"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={phone}
+                                        onChangeText={setPhone}
+                                        keyboardType="phone-pad"
+                                    />
+                                </View>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>RESUME (OPTIONAL)</Text>
+                                    <TouchableOpacity
+                                        style={styles.resumeButton}
+                                        onPress={handlePickResume}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Ionicons name="document-attach" size={24} color={resume ? THEME.primary : THEME.textMuted} />
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.resumeButtonText, resume && { color: THEME.primary }]}>
+                                                {resume ? resume.name : 'Upload Resume'}
+                                            </Text>
+                                            {resume && <Text style={styles.resumeSize}>{(resume.size! / 1024).toFixed(0)} KB</Text>}
+                                        </View>
+                                        {resume && (
+                                            <TouchableOpacity onPress={() => setResume(null)}>
+                                                <Ionicons name="close-circle" size={24} color={THEME.textMuted} />
+                                            </TouchableOpacity>
+                                        )}
                                     </TouchableOpacity>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                                </View>
 
-                        
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>PASSWORD</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="••••••••"
-                                placeholderTextColor="#A0AEC0"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                            />
-                        </View>
+                                
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>PASSWORD</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="••••••••"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry
+                                    />
+                                </View>
 
-                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-                        <TouchableOpacity
-                            style={styles.button}
-                            activeOpacity={0.8}
-                            onPress={handleRegister}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color={THEME.primaryForeground} />
-                            ) : (
-                                <Text style={styles.buttonText}>Register</Text>
-                            )}
-                        </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    activeOpacity={0.8}
+                                    onPress={handleRegister}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color={THEME.primaryForeground} />
+                                    ) : (
+                                        <Text style={styles.buttonText}>Continue</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>ENTER VERIFICATION CODE</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="6-digit OTP"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={otp}
+                                        onChangeText={setOtp}
+                                        keyboardType="number-pad"
+                                        maxLength={6}
+                                        textAlign="center"
+                                    />
+                                </View>
+
+                                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    activeOpacity={0.8}
+                                    onPress={handleVerifyOtp}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color={THEME.primaryForeground} />
+                                    ) : (
+                                        <Text style={styles.buttonText}>Verify & Register</Text>
+                                    )}
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={{ marginTop: 16, alignItems: 'center' }} 
+                                    onPress={() => setStep('DETAILS')}
+                                >
+                                    <Text style={{ color: THEME.primary, fontWeight: '600' }}>Back to Details</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
 
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.linkContainer}>
                             <Text style={styles.linkText}>Already have an account? <Text style={styles.linkHighlight}>Sign In</Text></Text>

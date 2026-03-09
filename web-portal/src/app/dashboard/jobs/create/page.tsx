@@ -52,6 +52,7 @@ export default function CreateJobPage() {
                     type: 'Full-time', skills, screeningQuestions,
                     maxApplications: maxApplications ? Number(maxApplications) : undefined,
                     currentCTCRequired, relocationRequired,
+                    noticePeriod: noticePeriod,
                     noticePeriodRequired: noticePeriod !== 'Immediate',
                 }),
             })
