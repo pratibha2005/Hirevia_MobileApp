@@ -10,6 +10,7 @@ export interface IJob extends Document {
     type?: string;
     status: 'Active' | 'Closed' | 'Draft';
     skills: string[];
+    noticePeriod?: string;
     noticePeriodRequired?: boolean;
     expectedCTCRequired?: boolean;
     currentCTCRequired?: boolean;
@@ -30,6 +31,7 @@ const JobSchema: Schema = new Schema({
     type: { type: String, default: 'Full-time' },
     status: { type: String, enum: ['Active', 'Closed', 'Draft'], default: 'Active' },
     skills: [{ type: String }],
+    noticePeriod: { type: String },
     noticePeriodRequired: { type: Boolean, default: false },
     expectedCTCRequired: { type: Boolean, default: false },
     currentCTCRequired: { type: Boolean, default: false },

@@ -72,6 +72,12 @@ export default function JobDetailsScreen() {
                             <Text style={styles.tagText}>{job.type}</Text>
                         </View>
                     ) : null}
+                    {job.noticePeriod ? (
+                        <View style={styles.tagBadge}>
+                            <Ionicons name="calendar-outline" size={14} color={THEME.textMuted} />
+                            <Text style={styles.tagText}>{job.noticePeriod} Notice</Text>
+                        </View>
+                    ) : null}
                 </View>
 
                 {skills.length > 0 && (
@@ -83,6 +89,24 @@ export default function JobDetailsScreen() {
                                     <Text style={styles.skillText}>{s}</Text>
                                 </View>
                             ))}
+                        </View>
+                    </>
+                )}
+
+                {(job.currentCTCRequired || job.relocationRequired) && (
+                    <>
+                        <Text style={styles.sectionTitle}>Key Requirements</Text>
+                        <View style={styles.skillsContainer}>
+                            {job.currentCTCRequired && (
+                                <View style={[styles.skillBadge, { backgroundColor: '#FFF4ED', borderColor: '#FFDDC2' }]}>
+                                    <Text style={[styles.skillText, { color: '#C25A00' }]}>Current CTC Required</Text>
+                                </View>
+                            )}
+                            {job.relocationRequired && (
+                                <View style={[styles.skillBadge, { backgroundColor: '#F3E8FF', borderColor: '#E8CAFF' }]}>
+                                    <Text style={[styles.skillText, { color: '#7E22CE' }]}>Relocation Required</Text>
+                                </View>
+                            )}
                         </View>
                     </>
                 )}

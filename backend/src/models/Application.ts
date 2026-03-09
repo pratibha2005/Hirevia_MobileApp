@@ -10,6 +10,8 @@ export interface IApplication extends Document {
         question: string;
         answer: string;
     }[];
+    relocationAnswer?: string;
+    ctcAnswer?: string;
     status: ApplicationStatus;
     appliedAt: Date;
 }
@@ -22,6 +24,8 @@ const ApplicationSchema: Schema = new Schema({
         question: { type: String, required: true },
         answer: { type: String, required: true }
     }],
+    relocationAnswer: { type: String },
+    ctcAnswer: { type: String },
     status: { type: String, enum: ['New', 'Under Review', 'Shortlisted', 'Rejected'], default: 'New' },
     appliedAt: { type: Date, default: Date.now }
 });

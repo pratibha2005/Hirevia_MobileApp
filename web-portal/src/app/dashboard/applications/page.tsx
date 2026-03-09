@@ -14,6 +14,9 @@ interface Application {
     status: string
     appliedAt: string
     screeningAnswers: ScreeningAnswer[]
+    resumeUrl?: string
+    relocationAnswer?: string
+    ctcAnswer?: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -139,9 +142,35 @@ export default function ApplicationsPage() {
                                         <tr className="bg-[var(--muted)] border-none">
                                             <td colSpan={6} className="p-0 border-none">
                                                 <div className="px-16 py-6 animate-in slide-in-from-top-2 fade-in duration-300">
-                                                    <h4 className="text-sm font-bold tracking-widest text-[var(--primary)] uppercase mb-4">Screening Answers</h4>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <h4 className="text-sm font-bold tracking-widest text-[var(--primary)] uppercase">Candidate Details & Answers</h4>
+                                                        {app.resumeUrl && (
+                                                            <a href={`${app.resumeUrl.startsWith('http') ? '' : API_BASE_URL}${app.resumeUrl}`} target="_blank" rel="noreferrer">
+                                                                <Button size="sm" variant="outline" className="gap-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white">
+                                                                    <Download className="w-4 h-4" /> View Resume
+                                                                </Button>
+                                                            </a>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-8 mb-6">
+                                                        {app.relocationAnswer && (
+                                                            <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)]">
+                                                                <p className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase mb-2">Relocation</p>
+                                                                <p className="font-semibold text-[var(--foreground)]">{app.relocationAnswer}</p>
+                                                            </div>
+                                                        )}
+                                                        {app.ctcAnswer && (
+                                                            <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] col-span-2 sm:col-span-1">
+                                                                <p className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase mb-2">Current CTC & Expectations</p>
+                                                                <p className="font-semibold text-[var(--foreground)]">{app.ctcAnswer}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
                                                     {app.screeningAnswers.length > 0 ? (
                                                         <div className="space-y-4">
+                                                            <h5 className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Screening Questions</h5>
                                                             {app.screeningAnswers.map((qa, idx) => (
                                                                 <div key={idx} className="space-y-1">
                                                                     <p className="font-semibold text-[var(--foreground)] text-sm">{qa.question}</p>

@@ -24,11 +24,18 @@ export default function ApplyFlowScreen() {
     const job = route.params?.job;
 
     const questions: string[] = job?.screeningQuestions || [];
-    const totalSteps = questions.length > 0 ? 3 : 2; // step 1: resume, step 2 (if questions): answers, final: confirm
+    const hasReqs = job?.relocationRequired || job?.currentCTCRequired;
+    // Step 1: Resume. Step 2 (Optional): Requirements. Step 3 (Optional): Questions. Final: Confirm
+    let computedTotalSteps = 2;
+    if (hasReqs) computedTotalSteps++;
+    if (questions.length > 0) computedTotalSteps++;
+    const totalSteps = computedTotalSteps;
 
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [answers, setAnswers] = useState<string[]>(questions.map(() => ''));
+    const [relocationAnswer, setRelocationAnswer] = useState('Open to discuss');
+    const [ctcAnswer, setCtcAnswer] = useState('');
     const [profileResumeUrl, setProfileResumeUrl] = useState<string | null>(null);
     const [resumeOption, setResumeOption] = useState<'existing' | 'new'>('existing');
     const [newResume, setNewResume] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
@@ -103,6 +110,13 @@ export default function ApplyFlowScreen() {
                 answer: answers[i] || '',
             }))));
 
+            if (job.relocationRequired) {
+                formData.append('relocationAnswer', relocationAnswer);
+            }
+            if (job.currentCTCRequired) {
+                formData.append('ctcAnswer', ctcAnswer);
+            }
+
             if (resumeOption === 'existing') {
                 formData.append('useExistingResume', 'true');
             } else if (newResume) {
@@ -141,7 +155,11 @@ export default function ApplyFlowScreen() {
 
     if (!job) return null;
 
-    const isAnswerStep = totalSteps === 3 && step === 2;
+    const reqStepIndex = hasReqs ? 2 : -1;
+    const answerStepIndex = questions.length > 0 ? (hasReqs ? 3 : 2) : -1;
+    
+    const isReqStep = step === reqStepIndex;
+    const isAnswerStep = step === answerStepIndex;
     const isConfirmStep = step === totalSteps;
 
     return (
@@ -234,6 +252,47 @@ export default function ApplyFlowScreen() {
                     </View>
                 )}
 
+                {isReqStep && (
+                    <View style={styles.stepContainer}>
+                        <Text style={styles.stepTitle}>Additional Requirements</Text>
+                        <Text style={styles.stepSubtitle}>The employer requires some additional details.</Text>
+
+                        {job.relocationRequired && (
+                            <View style={styles.questionCard}>
+                                <Text style={styles.questionLabel}>RELOCATION REQUIRED</Text>
+                                <Text style={styles.questionText}>Will you be able to relocate?</Text>
+                                <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                                    {['Yes', 'No', 'Open to discuss'].map((opt) => (
+                                        <TouchableOpacity
+                                            key={opt}
+                                            style={[styles.resumeCard, { flex: 1, padding: 12 }, relocationAnswer === opt && styles.resumeCardSelected]}
+                                            onPress={() => setRelocationAnswer(opt)}
+                                        >
+                                            <Text style={[styles.resumeName, { textAlign: 'center', fontSize: 13, marginBottom: 0 }]}>{opt}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+
+                        {job.currentCTCRequired && (
+                            <View style={styles.questionCard}>
+                                <Text style={styles.questionLabel}>CURRENT CTC & EXPECTATIONS</Text>
+                                <Text style={styles.questionText}>What is your current CTC and expectations?</Text>
+                                <TextInput
+                                    style={styles.inputArea}
+                                    multiline
+                                    placeholder="e.g. Current CTC: ₹8,00,000, Expected: ₹12,00,000"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={ctcAnswer}
+                                    onChangeText={setCtcAnswer}
+                                    textAlignVertical="top"
+                                />
+                            </View>
+                        )}
+                    </View>
+                )}
+
                 {isAnswerStep && (
                     <View style={styles.stepContainer}>
                         <Text style={styles.stepTitle}>Screening Questions</Text>
@@ -277,6 +336,12 @@ export default function ApplyFlowScreen() {
                                 <Text style={styles.summaryLabel}>Location</Text>
                                 <Text style={styles.summaryValue}>{job.location}</Text>
                             </View>
+                            {hasReqs && (
+                                <View style={styles.summaryRow}>
+                                    <Text style={styles.summaryLabel}>Reqs Answered</Text>
+                                    <Text style={styles.summaryValue}>Yes</Text>
+                                </View>
+                            )}
                             <View style={[styles.summaryRow, { borderBottomWidth: 0 }]}>
                                 <Text style={styles.summaryLabel}>Answers</Text>
                                 <Text style={styles.summaryValue}>{questions.length} question{questions.length !== 1 ? 's' : ''} answered</Text>
