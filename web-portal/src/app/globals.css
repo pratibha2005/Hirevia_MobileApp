@@ -48,6 +48,28 @@
 }
 
 @layer utilities {
+  @keyframes workflow-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  .animate-workflow-float {
+    animation: workflow-float 2.8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-workflow-float {
+      animation: none;
+    }
+  }
+
   /* Glass card surface */
   .subtle-glass {
     background: rgba(255, 255, 255, 0.92);

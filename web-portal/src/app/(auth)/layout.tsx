@@ -1,5 +1,6 @@
 import React from "react"
 import Image from "next/image"
+import AuthPanelAnimation from "@/components/auth/AuthPanelAnimation"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -30,25 +31,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     </div>
 
                     {/* Feature highlights */}
-                    <div className="mt-auto space-y-8">
+                    <div className="-mt-10 space-y-6">
                         <div>
-                            <h2 className="text-4xl lg:text-[2.75rem] font-extrabold tracking-tight leading-[1.1] mb-5 text-[var(--foreground)]">
+                            <h2 className="text-2xl lg:text-[2.75rem] font-extrabold tracking-tight leading-[1.1] mb-2 text-[var(--foreground)]">
                                 Enterprise-grade<br />
                                 <span className="text-[var(--primary)] text-glow">Recruitment & ATS.</span>
                             </h2>
-                            <p className="text-[var(--muted-foreground)] text-base leading-relaxed font-medium max-w-sm">
+                            <p className="text-[var(--muted-foreground)] text-sm leading-relaxed font-medium max-w-sm">
                                 Streamline hiring with precision. Built for high-performance talent acquisition teams.
                             </p>
                         </div>
 
-                        {/* Feature pills */}
-                        <div className="flex flex-wrap gap-2">
-                            {['AI Screening', 'Pipeline Tracking', 'Team Collaboration', 'Analytics'].map((f) => (
-                                <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border border-primary-ch/20 bg-primary-ch/8 text-[var(--primary)]">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
-                                    {f}
-                                </span>
-                            ))}
+                        {/* Lottie animation block */}
+                     <div className="rounded-2xl border border-primary-ch/15 bg-white/40 backdrop-blur-sm p-1 mt-2">
+                            <AuthPanelAnimation />
                         </div>
                     </div>
                 </div>
@@ -58,7 +54,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="flex-1 flex flex-col justify-center items-center p-8 sm:p-12 relative bg-[var(--background)] bg-grid-pattern">
                 {/* Ambient center glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-ch/3 via-transparent to-accent-ch/3 pointer-events-none" />
-                <div className="w-full max-w-[440px] relative z-10">
+                <div className="w-full  max-w-[440px] relative z-10">
                     {/* Mobile logo */}
                     <div className="flex items-center gap-3 mb-8 md:hidden">
                         <Image src="/assets/Logo.jpg" alt="Hirevia Logo" width={36} height={36} className="rounded-lg" />

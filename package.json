@@ -7,5 +7,10 @@
     "app:clear": "cd app && npx expo start --clear",
     "web": "cd web-portal && npm run dev",
     "backend": "cd backend && npm run dev"
+  },
+  "dependencies": {
+    "framer-motion": "^12.35.1",
+    "lottie-react": "^2.4.1",
+    "lucide-react": "^0.577.0"
   }
 }
