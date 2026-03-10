@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { Download, Search, ChevronDown, ChevronUp } from 'lucide-react'
+import { Download, Search, ChevronDown, ChevronUp, Users, Briefcase, CheckCircle2, Clock3, XCircle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { API_BASE_URL } from '@/lib/apiClient'
 
@@ -31,6 +31,8 @@ export default function ApplicationsPage() {
     const [loading, setLoading] = useState(true)
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [search, setSearch] = useState('')
+    const [activeStatus, setActiveStatus] = useState<'All' | (typeof STATUS_OPTIONS)[number]>('All')
+    const [updatingId, setUpdatingId] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -48,11 +50,25 @@ export default function ApplicationsPage() {
         fetchApps()
     }, [])
 
-    const filtered = applications.filter(a =>
-        a.applicantId?.name?.toLowerCase().includes(search.toLowerCase()) ||
-        a.applicantId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        a.jobId?.title?.toLowerCase().includes(search.toLowerCase())
-    )
+    const normalizedSearch = search.toLowerCase().trim()
+
+    const filtered = applications.filter((a) => {
+        const matchesSearch =
+            a.applicantId?.name?.toLowerCase().includes(normalizedSearch) ||
+            a.applicantId?.email?.toLowerCase().includes(normalizedSearch) ||
+            a.jobId?.title?.toLowerCase().includes(normalizedSearch)
+
+        const matchesStatus = activeStatus === 'All' || a.status === activeStatus
+        return matchesSearch && matchesStatus
+    })
+
+    const counts = {
+        all: applications.length,
+        new: applications.filter((app) => app.status === 'New').length,
+        review: applications.filter((app) => app.status === 'Under Review').length,
+        shortlisted: applications.filter((app) => app.status === 'Shortlisted').length,
+        rejected: applications.filter((app) => app.status === 'Rejected').length,
+    }
 
     const updateStatus = async (id: string, status: string) => {
         const token = localStorage.getItem('token')
@@ -104,12 +120,52 @@ export default function ApplicationsPage() {
                         <input type="text" placeholder="Search by name, email or job title..."
                             className="bg-transparent border-none outline-none w-full text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/60"
                             value={search} onChange={e => setSearch(e.target.value)} />
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] font-semibold">
+                            Showing <span className="text-[var(--foreground)]">{filtered.length}</span> of {applications.length} applications
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                        {(['All', ...STATUS_OPTIONS] as const).map((status) => {
+                            const isActive = activeStatus === status
+                            const statusCount =
+                                status === 'All'
+                                    ? counts.all
+                                    : status === 'New'
+                                        ? counts.new
+                                        : status === 'Under Review'
+                                            ? counts.review
+                                            : status === 'Shortlisted'
+                                                ? counts.shortlisted
+                                                : counts.rejected
+
+                            return (
+                                <button
+                                    key={status}
+                                    type="button"
+                                    onClick={() => setActiveStatus(status)}
+                                    className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold border transition-all ${
+                                        isActive
+                                            ? 'bg-[var(--foreground)] text-white border-[var(--foreground)] shadow-sm'
+                                            : 'bg-white text-[var(--muted-foreground)] border-[var(--border)] hover:border-[var(--primary)]/40 hover:text-[var(--foreground)]'
+                                    }`}
+                                >
+                                    {status} ({statusCount})
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
+<<<<<<< HEAD
                     <table className="w-full text-sm text-left">
                         <thead className="bg-[var(--background)] text-[var(--muted-foreground)] text-xs uppercase font-semibold tracking-wider">
+=======
+                    <table className="w-full text-sm text-left min-w-[860px]">
+                        <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] text-xs uppercase font-semibold tracking-wider">
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                             <tr>
                                 <th className="px-6 py-3 w-10"></th>
                                 <th className="px-6 py-3">Applicant</th>
@@ -129,26 +185,36 @@ export default function ApplicationsPage() {
                             ) : filtered.map((app) => (
                                 <React.Fragment key={app._id}>
                                     <tr
+<<<<<<< HEAD
                                         className={`hover:bg-[var(--background)] transition-colors cursor-pointer ${expandedRow === app._id ? 'bg-[var(--background)]' : ''}`}
+=======
+                                        className={`transition-all cursor-pointer ${expandedRow === app._id ? 'bg-[var(--muted)]/50' : 'hover:bg-[var(--muted)]/30'}`}
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                         onClick={() => setExpandedRow(expandedRow === app._id ? null : app._id)}
                                     >
                                         <td className="px-6 py-4 text-[var(--muted-foreground)]">
                                             {expandedRow === app._id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-semibold text-[var(--foreground)]">{app.applicantId?.name}</div>
-                                            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{app.applicantId?.email}</div>
+                                            <div className="font-semibold text-[var(--foreground)]">{app.applicantId?.name || 'Unknown Candidate'}</div>
+                                            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{app.applicantId?.email || 'No email available'}</div>
                                         </td>
                                         <td className="px-6 py-4 font-medium text-[var(--foreground)]">{app.jobId?.title}</td>
                                         <td className="px-6 py-4 text-[var(--muted-foreground)]">
                                             {new Date(app.appliedAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4">
+<<<<<<< HEAD
                                             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${STATUS_COLORS[app.status] || STATUS_COLORS['New']}`}>
+=======
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_STYLES[app.status]?.badge || STATUS_STYLES['New'].badge}`}>
+                                                <span className={`h-2 w-2 rounded-full ${STATUS_STYLES[app.status]?.dot || STATUS_STYLES['New'].dot}`} />
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                                 {app.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
+<<<<<<< HEAD
                                             <select
                                                 className="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-2 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10"
                                                 value={app.status}
@@ -168,6 +234,29 @@ export default function ApplicationsPage() {
                                                 <div className="px-16 py-6 animate-in slide-in-from-top-2 fade-in duration-300">
                                                     <div className="flex justify-between items-start mb-4">
                                                         <h4 className="text-sm font-semibold text-[var(--primary)] uppercase tracking-wider">Candidate Details & Answers</h4>
+=======
+                                            <div className="flex flex-col items-end gap-1">
+                                                <select
+                                                    className={`text-xs border rounded-lg px-2.5 py-1.5 font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/25 transition-all ${STATUS_STYLES[app.status]?.select || STATUS_STYLES['New'].select} ${updatingId === app._id ? 'opacity-70 animate-pulse' : ''}`}
+                                                    value={app.status}
+                                                    onClick={e => e.stopPropagation()}
+                                                    onChange={e => { e.stopPropagation(); updateStatus(app._id, e.target.value) }}
+                                                >
+                                                    {STATUS_OPTIONS.map((status) => (
+                                                        <option key={status}>{status}</option>
+                                                    ))}
+                                                </select>
+                                                {updatingId === app._id && <span className="text-[10px] text-[var(--muted-foreground)]">Updating...</span>}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {expandedRow === app._id && (
+                                        <tr className="bg-[var(--muted)]/70 border-none">
+                                            <td colSpan={6} className="p-0 border-none">
+                                                <div className="px-6 sm:px-10 py-6 animate-in slide-in-from-top-2 fade-in duration-300">
+                                                    <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-3 mb-4">
+                                                        <h4 className="text-sm font-bold tracking-widest text-[var(--primary)] uppercase">Candidate Details & Answers</h4>
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                                         {app.resumeUrl && (
                                                             <a href={`${app.resumeUrl.startsWith('http') ? '' : API_BASE_URL}${app.resumeUrl}`} target="_blank" rel="noreferrer">
                                                                 <Button size="sm" variant="outline" className="gap-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white">
@@ -177,16 +266,28 @@ export default function ApplicationsPage() {
                                                         )}
                                                     </div>
 
+<<<<<<< HEAD
                                                     <div className="grid grid-cols-2 gap-6 mb-6">
                                                         {app.relocationAnswer && (
                                                             <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)]">
                                                                 <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-2">Relocation</p>
+=======
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                                                        {app.relocationAnswer && (
+                                                            <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+                                                                <p className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase mb-2">Relocation</p>
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                                                 <p className="font-semibold text-[var(--foreground)]">{app.relocationAnswer}</p>
                                                             </div>
                                                         )}
                                                         {app.ctcAnswer && (
+<<<<<<< HEAD
                                                             <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] col-span-2 sm:col-span-1">
                                                                 <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-2">Current CTC & Expectations</p>
+=======
+                                                            <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+                                                                <p className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase mb-2">Current CTC & Expectations</p>
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                                                 <p className="font-semibold text-[var(--foreground)]">{app.ctcAnswer}</p>
                                                             </div>
                                                         )}
@@ -196,16 +297,22 @@ export default function ApplicationsPage() {
                                                         <div className="space-y-4">
                                                             <h5 className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Screening Questions</h5>
                                                             {app.screeningAnswers.map((qa, idx) => (
+<<<<<<< HEAD
                                                                 <div key={idx} className="space-y-1.5">
                                                                     <p className="font-semibold text-[var(--foreground)] text-sm">{qa.question}</p>
                                                                     <p className="text-[var(--muted-foreground)] text-sm bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)]">
+=======
+                                                                <div key={idx} className="space-y-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-4">
+                                                                    <p className="font-semibold text-[var(--foreground)] text-sm">{qa.question}</p>
+                                                                    <p className="text-[var(--muted-foreground)] text-sm">
+>>>>>>> 528060da14b2774158cdd7db0140d7d7d5857317
                                                                         {qa.answer}
                                                                     </p>
                                                                 </div>
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <p className="text-sm text-[var(--muted-foreground)] italic">No screening questions were asked for this job.</p>
+                                                        <p className="text-sm text-[var(--muted-foreground)] italic flex items-center gap-2"><XCircle className="w-4 h-4" /> No screening questions were asked for this job.</p>
                                                     )}
                                                 </div>
                                             </td>
