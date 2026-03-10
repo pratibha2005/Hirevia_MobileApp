@@ -26,18 +26,19 @@ function MainTabs() {
                     if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
                     else if (route.name === 'Applications') iconName = focused ? 'document-text' : 'document-text-outline';
                     else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-                    return <Ionicons name={iconName} size={size} color={color} />;
+                    return <Ionicons name={iconName} size={22} color={color} />;
                 },
                 tabBarActiveTintColor: '#0F4C5C', // Deep Teal
                 tabBarInactiveTintColor: '#9CA3AF',
                 tabBarStyle: {
                     borderTopWidth: 1,
-                    borderTopColor: '#F3F4F6',
+                    borderTopColor: '#E2E8F0',
                     elevation: 0,
                     shadowOpacity: 0,
-                    height: 85,
-                    paddingBottom: 30,
-                    paddingTop: 10,
+                    height: 70,
+                    paddingBottom: 20,
+                    paddingTop: 8,
+                    backgroundColor: '#FFFFFF',
                 },
                 tabBarLabelStyle: {
                     fontSize: 12,
@@ -60,7 +61,7 @@ export default function AppNavigator() {
                 initialRouteName="Login"
                 screenOptions={{
                     headerShown: false,
-                    contentStyle: { backgroundColor: '#F9FAFB' }
+                    contentStyle: { backgroundColor: '#F8F9FA' }
                 }}
             >
                 {/* Auth Stack */}

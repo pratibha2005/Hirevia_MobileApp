@@ -153,14 +153,22 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
         application.status = status;
         await application.save();
 
+        // Send email notification asynchronously (fire and forget - don't block response)
         if (status === 'Shortlisted' || status === 'Rejected') {
+            console.log(`📧 Sending ${status} email to ${application.applicantId.email} in background...`);
+            
+            // Fire and forget - don't await
             sendApplicationStatusEmail({
                 candidateName: application.applicantId.name,
                 candidateEmail: application.applicantId.email,
                 companyName: application.jobId.companyId.name,
                 jobTitle: application.jobId.title,
                 status: status as 'Shortlisted' | 'Rejected'
-            }).catch(e => console.error('Failed to send status email:', e));
+            }).then(() => {
+                console.log(`✅ Successfully sent ${status} email to ${application.applicantId.email}`);
+            }).catch((emailError: any) => {
+                console.error(`❌ Failed to send ${status} email:`, emailError.message);
+            });
         }
 
         return res.json({ success: true, application });

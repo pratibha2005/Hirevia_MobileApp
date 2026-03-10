@@ -64,34 +64,34 @@ export default function CreateJobPage() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
+        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 pb-12">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="rounded-lg border border-[var(--border)] bg-[var(--muted)]" onClick={() => router.back()}>
+                <Button variant="ghost" size="icon" className="rounded-lg" onClick={() => router.back()}>
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)]">Post a New Job</h1>
-                    <p className="text-[var(--muted-foreground)]">Create a professional listing to attract top talent.</p>
+                    <h1 className="text-2xl font-bold text-[var(--foreground)]">Post a New Job</h1>
+                    <p className="text-[var(--muted-foreground)] text-sm mt-1">Create a professional listing to attract top talent</p>
                 </div>
             </div>
 
-            <form onSubmit={handlePublish} className="space-y-8">
+            <form onSubmit={handlePublish} className="space-y-6">
                 {/* Section 1: Job Details */}
-                <div className="subtle-glass p-8 rounded-xl space-y-6">
-                    <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-                        <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">1</div>
-                        <h2 className="text-lg font-semibold text-[var(--foreground)]">Job Details</h2>
+                <div className="subtle-glass p-6 rounded-xl space-y-5">
+                    <div className="flex items-center gap-3 border-b border-[var(--border)] pb-3">
+                        <div className="w-7 h-7 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">1</div>
+                        <h2 className="text-base font-semibold text-[var(--foreground)]">Job Details</h2>
                     </div>
 
                     <div className="space-y-4">
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Job Title</label>
+                            <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Job Title</label>
                             <Input placeholder="e.g. Senior Frontend Engineer" required value={title} onChange={e => setTitle(e.target.value)} />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Description</label>
+                            <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Description</label>
                             <textarea
-                                className="flex min-h-[120px] w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
+                                className="flex min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm placeholder:text-[var(--muted-foreground)]/60 focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10 transition-all"
                                 placeholder="Describe the role, responsibilities, and what you're looking for..."
                                 required
                                 value={description}
@@ -100,12 +100,12 @@ export default function CreateJobPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Location</label>
+                                <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Location</label>
                                 <Input placeholder="e.g. San Francisco, CA" value={location} onChange={e => setLocation(e.target.value)} />
                             </div>
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Work Model</label>
-                                <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" value={workModel} onChange={e => setWorkModel(e.target.value)}>
+                                <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Work Model</label>
+                                <select className="flex h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10 transition-all" value={workModel} onChange={e => setWorkModel(e.target.value)}>
                                     <option>Remote</option>
                                     <option>Hybrid</option>
                                     <option>On-site</option>
@@ -113,27 +113,27 @@ export default function CreateJobPage() {
                             </div>
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Skills / Tags (comma-separated)</label>
+                            <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Skills / Tags (comma-separated)</label>
                             <Input placeholder="e.g. React, TypeScript, Node.js" value={skillsInput} onChange={e => setSkillsInput(e.target.value)} />
                         </div>
                     </div>
                 </div>
 
                 {/* Section 2: Compensation & Requirements */}
-                <div className="subtle-glass p-8 rounded-xl space-y-6">
-                    <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-                        <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">2</div>
-                        <h2 className="text-lg font-semibold text-[var(--foreground)]">Compensation & Requirements</h2>
+                <div className="subtle-glass p-6 rounded-xl space-y-5">
+                    <div className="flex items-center gap-3 border-b border-[var(--border)] pb-3">
+                        <div className="w-7 h-7 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">2</div>
+                        <h2 className="text-base font-semibold text-[var(--foreground)]">Compensation & Requirements</h2>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-5">
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Salary / CTC Range</label>
+                            <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Salary / CTC Range</label>
                             <Input placeholder="e.g. ₹15-25 LPA or $120k-$160k" value={salary} onChange={e => setSalary(e.target.value)} />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                            <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Notice Period</label>
-                            <select className="flex h-11 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" value={noticePeriod} onChange={e => setNoticePeriod(e.target.value)}>
+                            <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Notice Period</label>
+                            <select className="flex h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10 transition-all" value={noticePeriod} onChange={e => setNoticePeriod(e.target.value)}>
                                 <option>Immediate</option>
                                 <option>15 Days</option>
                                 <option>30 Days</option>
@@ -141,13 +141,13 @@ export default function CreateJobPage() {
                             </select>
                         </div>
 
-                        <div className="col-span-2 flex items-center gap-8 pt-2">
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" className="w-5 h-5 rounded accent-[var(--primary)]" checked={currentCTCRequired} onChange={e => setCurrentCTCRequired(e.target.checked)} />
+                        <div className="col-span-2 flex items-center gap-6 pt-2">
+                            <label className="flex items-center gap-2.5 cursor-pointer group">
+                                <input type="checkbox" className="w-4 h-4 rounded accent-[var(--primary)]" checked={currentCTCRequired} onChange={e => setCurrentCTCRequired(e.target.checked)} />
                                 <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">Current CTC Required</span>
                             </label>
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" className="w-5 h-5 rounded accent-[var(--primary)]" checked={relocationRequired} onChange={e => setRelocationRequired(e.target.checked)} />
+                            <label className="flex items-center gap-2.5 cursor-pointer group">
+                                <input type="checkbox" className="w-4 h-4 rounded accent-[var(--primary)]" checked={relocationRequired} onChange={e => setRelocationRequired(e.target.checked)} />
                                 <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">Relocation Required</span>
                             </label>
                         </div>
@@ -155,30 +155,30 @@ export default function CreateJobPage() {
                 </div>
 
                 {/* Section 3: Screening Questions Builder */}
-                <div className="subtle-glass p-8 rounded-xl space-y-6">
-                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <div className="subtle-glass p-6 rounded-xl space-y-5">
+                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">3</div>
-                            <h2 className="text-lg font-semibold text-[var(--foreground)]">Screening Questions</h2>
+                            <div className="w-7 h-7 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">3</div>
+                            <h2 className="text-base font-semibold text-[var(--foreground)]">Screening Questions</h2>
                         </div>
-                        <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="gap-2 text-[var(--primary)] border-[var(--primary)]/20 hover:bg-[var(--primary)] hover:text-white">
+                        <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="gap-2 text-[var(--primary)]">
                             <Plus className="w-4 h-4" /> Add Question
                         </Button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {questions.length === 0 ? (
-                            <div className="text-center py-8 text-[var(--muted-foreground)] border-2 border-dashed border-[var(--border)] rounded-lg">
+                            <div className="text-center py-8 text-[var(--muted-foreground)] border-2 border-dashed border-[var(--border)] rounded-lg text-sm">
                                 No screening questions added. Click the button above to add one.
                             </div>
                         ) : (
                             questions.map((q, index) => (
-                                <div key={q.id} className="flex gap-4 items-start p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)] relative group transition-all hover:border-[var(--primary)]/30">
-                                    <div className="flex-1 space-y-3">
+                                <div key={q.id} className="flex gap-3 items-start p-4 bg-[var(--background)] rounded-lg border border-[var(--border)] relative group transition-all hover:border-[var(--primary)]/30">
+                                    <div className="flex-1 space-y-2.5">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Question {index + 1}</span>
+                                            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Question {index + 1}</span>
                                             <select
-                                                className="text-sm bg-transparent border-none text-[var(--primary)] font-semibold cursor-pointer outline-none focus:ring-0"
+                                                className="text-xs bg-transparent border-none text-[var(--primary)] font-semibold cursor-pointer outline-none focus:ring-0"
                                                 value={q.type}
                                                 onChange={(e) => {
                                                     const newQs = [...questions]
@@ -199,15 +199,14 @@ export default function CreateJobPage() {
                                                 newQs[index].text = e.target.value
                                                 setQuestions(newQs)
                                             }}
-                                            className=""
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => removeQuestion(q.id)}
-                                        className="text-gray-400 hover:text-red-500 transition-colors pt-8 px-2"
+                                        className="text-gray-400 hover:text-red-500 transition-colors pt-7"
                                     >
-                                        <Trash2 className="w-5 h-5" />
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             ))
@@ -216,25 +215,25 @@ export default function CreateJobPage() {
                 </div>
 
                 {/* Section 4: Settings & Publish */}
-                <div className="subtle-glass p-8 rounded-xl space-y-6">
-                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <div className="subtle-glass p-6 rounded-xl space-y-5">
+                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">4</div>
-                            <h2 className="text-lg font-semibold text-[var(--foreground)]">Application Settings</h2>
+                            <div className="w-7 h-7 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">4</div>
+                            <h2 className="text-base font-semibold text-[var(--foreground)]">Application Settings</h2>
                         </div>
                     </div>
 
                     <div className="space-y-1.5 flex flex-col max-w-xs">
-                        <label className="text-xs font-bold tracking-widest text-[var(--muted-foreground)] uppercase">Max Applications Allowed</label>
+                        <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Max Applications Allowed</label>
                         <Input type="number" placeholder="Leave empty for no limit" min="1"
                             value={maxApplications} onChange={e => setMaxApplications(e.target.value)} />
                     </div>
                 </div>
 
-                <div className="flex justify-end pt-4 pb-20">
+                <div className="flex justify-end pt-4">
                     <div className="flex items-center gap-4">
-                        {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
-                        <Button type="submit" size="lg" disabled={loading} className="gap-2 px-8 shadow-md hover:shadow-lg">
+                        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                        <Button type="submit" size="lg" disabled={loading} className="gap-2 px-8">
                             {loading ? "Publishing..." : <><CheckCircle2 className="w-5 h-5" /> Publish Job</>}
                         </Button>
                     </div>
