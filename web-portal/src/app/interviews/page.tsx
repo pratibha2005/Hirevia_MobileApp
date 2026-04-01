@@ -454,7 +454,7 @@ export default function InterviewScheduling() {
             <label className="text-[10px] font-semibold uppercase tracking-widest text-on-surface-subtle block mb-2">Description</label>
             <textarea
               placeholder="Add interview details, topics to cover, or any notes..."
-              className="w-full h-24 rounded-lg bg-surface-low border border-glass-border px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
+              className="w-full h-16 rounded-lg bg-surface-low border border-glass-border px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
               value={interviewDescription}
               onChange={e => setInterviewDescription(e.target.value)}
             />

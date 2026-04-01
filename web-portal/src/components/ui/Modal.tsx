@@ -82,7 +82,7 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
               )}
 
               {/* Content */}
-              <div className="p-6">{children}</div>
+              <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-6">{children}</div>
             </motion.div>
           </div>
         </>
