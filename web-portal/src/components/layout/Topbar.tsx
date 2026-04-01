@@ -1,0 +1,87 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { getStoredUser } from '@/lib/apiClient';
+
+const pageLabels: Record<string, { title: string; subtitle: string }> = {
+  '/':            { title: 'Dashboard',         subtitle: 'Global overview & analytics' },
+  '/jobs':        { title: 'Jobs',              subtitle: 'Manage open positions' },
+  '/candidates':  { title: 'Pipeline',          subtitle: 'Drag & drop hiring pipeline' },
+  '/interviews':  { title: 'Interviews',        subtitle: 'Schedule & manage interviews' },
+  '/analytics':   { title: 'Analytics',         subtitle: 'Recruitment metrics & insights' },
+  '/settings':    { title: 'Settings',          subtitle: 'Account & workspace settings' },
+};
+
+function TopbarUser() {
+  const [user, setUser] = useState<{ name: string } | null>(null);
+  useEffect(() => {
+    const stored = getStoredUser();
+    if (stored) setUser({ name: stored.name || 'HR User' });
+  }, []);
+  const initials = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'H';
+  return (
+    <div className="flex items-center gap-2 pl-4 border-l border-glass-border cursor-pointer group">
+      <div className="w-8 h-8 rounded-full bg-primary-gradient flex items-center justify-center text-white text-[12px] font-bold shadow-glow-sm">
+        {initials}
+      </div>
+      <div className="hidden sm:block">
+        <p className="text-sm font-semibold text-on-surface leading-none">{user?.name || 'HR User'}</p>
+      </div>
+    </div>
+  );
+}
+
+export function Topbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const page = pageLabels[pathname] || { title: 'HireVia', subtitle: '' };
+  const [searchVal, setSearchVal] = useState('');
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchVal.trim()) return;
+    router.push(`/jobs?search=${encodeURIComponent(searchVal)}`);
+  };
+
+  return (
+    <div
+      className="h-[64px] sticky top-0 z-20 flex items-center justify-between px-6 shrink-0"
+      style={{
+        background: 'rgba(11,16,32,0.80)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      <div className="flex flex-col justify-center min-w-0">
+        <h1 className="text-[17px] font-display font-semibold text-on-surface leading-tight tracking-tight truncate">
+          {page.title}
+        </h1>
+        {page.subtitle && (
+          <p className="text-[12px] text-on-surface-variant truncate mt-0.5">{page.subtitle}</p>
+        )}
+      </div>
+
+      <div className="flex-1 max-w-md mx-6">
+        <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-lg border border-glass-border bg-surface-lowest/60 transition-all duration-200 focus-within:border-primary/50 focus-within:bg-surface-lowest focus-within:shadow-glow-sm">
+          <Search className="absolute left-3 w-4 h-4 text-on-surface-variant" />
+          <input
+            type="text"
+            placeholder="Search jobs..."
+            value={searchVal}
+            onChange={e => setSearchVal(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm bg-transparent text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
+          />
+        </form>
+      </div>
+
+      <div className="flex items-center">
+        <TopbarUser />
+      </div>
+    </div>
+  );
+}

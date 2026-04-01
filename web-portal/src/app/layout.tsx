@@ -1,16 +1,26 @@
 import type { Metadata } from 'next';
-import { Epilogue } from 'next/font/google';
+import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
+import { AppShell } from '@/components/layout/AppShell';
 
-const epilogue = Epilogue({
+const inter = Inter({
     subsets: ['latin'],
+    variable: '--font-inter',
     display: 'swap',
-    variable: '--font-epilogue',
+    weight: ['300', '400', '500', '600', '700'],
+});
+
+const manrope = Manrope({
+    subsets: ['latin'],
+    variable: '--font-manrope',
+    display: 'swap',
+    weight: ['500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
-    title: 'Hirevia - Enterprise Recruitment System',
-    description: 'High-end B2B Recruitment & Applicant Tracking System',
+    title: 'HireVia — Premium Recruitment Platform',
+    description: 'High-end B2B Recruitment & Applicant Tracking System. Manage your entire hiring pipeline with a modern, intuitive interface.',
+    keywords: ['hiring', 'recruitment', 'ATS', 'applicant tracking', 'HR software'],
 };
 
 export default function RootLayout({
@@ -19,11 +29,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className={`${epilogue.variable} font-sans`}>
-            <body className="min-h-screen relative antialiased leading-relaxed bg-[var(--background)] text-[var(--foreground)]">
-                {/* Subtle geometric grid texture */}
-                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
-                {children}
+        <html lang="en" className={`${inter.variable} ${manrope.variable}`} suppressHydrationWarning>
+            <body className="min-h-screen antialiased" style={{ background: '#0B1020', color: '#E5E7EB', fontFamily: 'Inter, sans-serif' }}>
+                <AppShell>{children}</AppShell>
             </body>
         </html>
     );

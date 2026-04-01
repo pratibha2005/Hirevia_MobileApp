@@ -132,7 +132,7 @@ export const getJobApplications = async (req: Request, res: Response) => {
 export const updateApplicationStatus = async (req: Request, res: Response) => {
     try {
         const { status } = req.body;
-        const valid = ['New', 'Under Review', 'Shortlisted', 'Rejected'];
+        const valid = ['New', 'Under Review', 'Shortlisted', 'Interview', 'Offer', 'Hired', 'Rejected'];
         if (!valid.includes(status))
             return res.status(400).json({ success: false, message: 'Invalid status' });
 
@@ -149,6 +149,11 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
 
         if (String(companyId) !== String(req.user!.companyId))
             return res.status(403).json({ success: false, message: 'Forbidden' });
+
+        // IMPORTANT: Prevent no-op and redundant emails if status is already correct
+        if (application.status === status) {
+            return res.json({ success: true, application });
+        }
 
         application.status = status;
         await application.save();

@@ -173,3 +173,34 @@ export const updateAvailability = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// PATCH /api/interviews/:id
+export const updateInterview = async (req: Request, res: Response) => {
+    try {
+        const updates = req.body;
+        
+        if (updates.interviewDate && !isValidIsoDate(updates.interviewDate)) {
+            return res.status(400).json({ success: false, message: 'Invalid date format' });
+        }
+        if (updates.startTime && !isValidTime(updates.startTime)) {
+            return res.status(400).json({ success: false, message: 'Invalid start time format' });
+        }
+        if (updates.endTime && !isValidTime(updates.endTime)) {
+            return res.status(400).json({ success: false, message: 'Invalid end time format' });
+        }
+
+        const interview = await Interview.findOneAndUpdate(
+            { _id: req.params.id, companyId: req.user!.companyId },
+            { $set: updates },
+            { new: true }
+        );
+
+        if (!interview) {
+            return res.status(404).json({ success: false, message: 'Interview not found' });
+        }
+
+        return res.json({ success: true, interview });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
