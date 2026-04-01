@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes';
 import jobRoutes from './routes/jobRoutes';
 import applicationRoutes from './routes/applicationRoutes';
 import interviewRoutes from './routes/interviewRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 import { requireAuth } from './middlewares/authMiddleware';
 import { requireRole } from './middlewares/roleMiddleware';
 import { requestLogger } from './middlewares/requestLogger';
@@ -42,6 +43,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', interviewRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Explicit interview route bindings (fallback for runtime router resolution issues)
 app.get('/api/interviews', requireAuth, requireRole(['HR']), listInterviews);

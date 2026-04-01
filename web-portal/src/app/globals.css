@@ -4,106 +4,241 @@
 
 @layer base {
   :root {
-    /* ─── Light neutral palette ─── */
-    --background: #ffffff;
-    --surface: #ffffff;
+    /* ── Core Background ── */
+    --background: #0B1020;
+    --foreground: #E5E7EB;
 
-    --foreground: #1f2937;
+    /* ── Surface Tiers (dark glass scale) ── */
+    --surface-base:    #0B1020;
+    --surface-low:     rgba(255,255,255,0.04);
+    --surface-lowest:  rgba(255,255,255,0.06);
+    --surface-mid:     rgba(255,255,255,0.08);
+    --surface-high:    rgba(255,255,255,0.12);
+    --surface-highest: rgba(255,255,255,0.18);
 
-    --primary: #5EC8B4;
-    /* Teal-mint from logo */
-    --primary-ch: 94 200 180;
-    --primary-foreground: #ffffff;
+    /* ── Text ── */
+    --on-surface:         #E5E7EB;
+    --on-surface-variant: #9CA3AF;
+    --on-surface-subtle:  #4B5563;
 
-    --accent: #2589C3;
-    /* Ocean blue from logo */
-    --accent-ch: 37 137 195;
-    --accent-foreground: #ffffff;
+    /* ── Brand ── */
+    --primary:            #4F46E5;
+    --primary-hover:      #4338CA;
+    --primary-light:      rgba(79,70,229,0.15);
+    --primary-glow:       rgba(79,70,229,0.35);
+    --secondary:          #06B6D4;
+    --secondary-light:    rgba(6,182,212,0.15);
 
-    --muted: #f3f4f6;
-    --muted-ch: 243 244 246;
-    --muted-foreground: #6b7280;
+    /* ── Gradient stops ── */
+    --primary-gradient-start: #6366F1;
+    --primary-gradient-end:   #8B5CF6;
 
-    --border: #e5e7eb;
-    --input: #e5e7eb;
-    --ring: #5EC8B4;
+    /* ── Glass ── */
+    --glass-bg:     rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,0.4);
 
-    --success: #059669;
-    --warning: #D97706;
-    --danger: #DC2626;
+    /* ── Semantic ── */
+    --success: #22C55E;
+    --danger:  #EF4444;
+    --warning: #F59E0B;
+    --success-bg: rgba(34,197,94,0.12);
+    --danger-bg:  rgba(239,68,68,0.12);
+    --warning-bg: rgba(245,158,11,0.12);
 
-    --radius: 0.5rem;
+    /* ── Legacy compatibility ── */
+    --primary-fixed:             rgba(79,70,229,0.15);
+    --on-primary-fixed-variant:  #818CF8;
+    --outline-variant:           rgba(255,255,255,0.12);
+    --radius: 1rem;
   }
-}
 
-@layer base {
+  html {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] font-sans antialiased;
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+    font-family: 'Inter', 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   ::selection {
-    background: rgba(94, 200, 180, 0.25);
-    color: #1f2937;
+    background: rgba(79, 70, 229, 0.3);
+    color: #E5E7EB;
   }
 
-  * {
-    border-color: var(--border);
-  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
 }
 
 @layer utilities {
-  @keyframes workflow-float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-12px);
-    }
+  /* ── Gradient text ── */
+  .gradient-text {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .animate-workflow-float {
-    animation: workflow-float 2.8s ease-in-out infinite;
-    will-change: transform;
+  /* ── Primary gradient bg ── */
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-gradient-end) 100%);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .animate-workflow-float {
-      animation: none;
-    }
+  /* ── Glass surfaces ── */
+  .glass-surface {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
   }
 
-  /* Glass card surface */
-  .subtle-glass {
-    background: rgba(255, 255, 255, 0.92);
+  .glass-card {
+    background: rgba(255,255,255,0.05);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
   }
 
-  /* Scanline grid texture */
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(to right, rgba(37, 137, 195, 0.07) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(37, 137, 195, 0.07) 1px, transparent 1px);
-    background-size: 40px 40px;
+  .glass-sidebar {
+    background: rgba(11,16,32,0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(255,255,255,0.08);
   }
 
-  /* Teal glow accent */
-  .glow-effect {
-    box-shadow: 0 0 0 1px rgba(94, 200, 180, 0.14), 0 0 18px rgba(94, 200, 180, 0.08), 0 8px 28px rgba(15, 23, 42, 0.08);
+  .glass-modal {
+    background: rgba(15,20,40,0.92);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
   }
 
-  /* Strong primary glow for interactive elements */
+  /* ── Ghost border ── */
+  .ghost-border {
+    border: 1px solid var(--glass-border);
+  }
+
+  /* ── Glow effects ── */
   .glow-primary {
-    box-shadow: 0 0 16px rgba(94, 200, 180, 0.22), 0 0 32px rgba(94, 200, 180, 0.1);
+    box-shadow: 0 0 24px rgba(79,70,229,0.4), 0 0 48px rgba(79,70,229,0.2);
   }
 
-  /* Horizontal accent divider line */
-  .accent-line {
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    height: 1px;
+  .glow-primary-sm {
+    box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+  }
+
+  .glow-card {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset;
+  }
+
+  /* ── Ambient shadow (legacy) ── */
+  .ambient-shadow {
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* ── Noise/texture overlay ── */
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.04;
+  }
+
+  /* ── No scrollbar ── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Gradient border trick ── */
+  .gradient-border {
+    position: relative;
+    border-radius: 16px;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(139,92,246,0.3), rgba(6,182,212,0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* ── Notification pulse ── */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  .pulse-ring::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--danger);
+    animation: pulse-ring 1.8s ease-out infinite;
+  }
+
+  /* ── Card hover lift ── */
+  .card-hover {
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,70,229,0.3);
   }
 }
+/* React Resizable custom handle styles */
+.react-resizable-handle {
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  bottom: 0;
+  right: -5px;
+  cursor: col-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.react-resizable-handle::after {
+  content: "";
+  width: 2px;
+  height: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+th:hover .react-resizable-handle {
+  opacity: 1;
+}
+
+.react-resizable-handle:hover::after,
+.react-resizable-handle:active::after {
+  background-color: #4F46E5;
+}
+
