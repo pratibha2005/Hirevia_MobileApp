@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/apiClient';
+import { useToast } from '@/lib/toast-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import {
   Video, Clock, ChevronLeft, ChevronRight, Plus,
   Calendar, CheckCircle2, AlertCircle, RefreshCw,
-  MoreHorizontal, Users, Zap
+  MoreHorizontal, Users, Zap, Loader
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -151,10 +152,12 @@ function DroppableTimeSlot({ timeSlot, interviews, isCurrentTime }: { timeSlot: 
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function InterviewScheduling() {
+  const { addToast } = useToast();
   const [interviews, setInterviews] = useState<Interview[]>(initialInterviews);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState(2); // Wed = index 2
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // New Interview Form State
   const [candidateName, setCandidateName] = useState('');
@@ -189,6 +192,17 @@ export default function InterviewScheduling() {
   };
 
   const handlePostInterview = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    if (!candidateName.trim() || !candidateEmail.trim()) {
+      addToast({
+        type: 'error',
+        title: 'Validation Error',
+        description: 'Please fill in all required fields',
+      });
+      return;
+    }
+
+    setIsLoading(true);
     const defaultEnd = parseInt(startTime.split(':')[0]) + 1;
     let endTime = `${defaultEnd < 10 ? '0' : ''}${defaultEnd}:00`;
 
@@ -208,16 +222,35 @@ export default function InterviewScheduling() {
       });
       const data = await resp.json();
       if (data.success) {
+        addToast({
+          type: 'success',
+          title: 'Interview Scheduled Successfully! 🎉',
+          description: `Email sent to ${candidateEmail}`,
+          duration: 5000,
+        });
         setShowAddModal(false);
         fetchInterviews();
         setCandidateName('');
-        setCandidateEmail('');
+        setCandidateEmail('candidate@example.com');
         setInterviewDescription('');
+        setStartTime('10:00');
+        setInterviewType('Technical Screen');
       } else {
-        alert(data.message || 'Error occurred');
+        addToast({
+          type: 'error',
+          title: 'Error',
+          description: data.message || 'Failed to schedule interview',
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error scheduling:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to schedule interview',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -460,9 +493,17 @@ export default function InterviewScheduling() {
             />
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-glass-border">
-            <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>Cancel</Button>
-            <Button variant="primary" size="sm" onClick={handlePostInterview}>
-              <Calendar className="w-3.5 h-3.5 mr-1.5" /> Schedule
+            <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)} disabled={isLoading}>Cancel</Button>
+            <Button variant="primary" size="sm" onClick={handlePostInterview} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Scheduling...
+                </>
+              ) : (
+                <>
+                  <Calendar className="w-3.5 h-3.5 mr-1.5" /> Schedule
+                </>
+              )}
             </Button>
           </div>
         </div>
