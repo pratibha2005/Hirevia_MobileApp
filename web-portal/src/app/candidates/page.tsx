@@ -19,7 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext, closestCorners, KeyboardSensor, PointerSensor,
-  useSensor, useSensors, DragOverlay, DragStartEvent, DragOverEvent, DragEndEvent,
+  useSensor, useSensors, DragOverlay, DragStartEvent, DragOverEvent, DragEndEvent, useDroppable
 } from '@dnd-kit/core';
 import {
   SortableContext, arrayMove, sortableKeyboardCoordinates,
@@ -28,7 +28,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export type CandidateStatus = 'New' | 'Under Review' | 'Shortlisted' | 'Rejected';
+export type CandidateStatus = 'New' | 'Under Review' | 'Shortlisted' | 'Interview' | 'Offer' | 'Hired' | 'Rejected';
 
 interface Candidate {
   id: string;
@@ -49,12 +49,15 @@ interface Candidate {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const initialCandidates: Candidate[] = [];
 
-const COLUMNS: CandidateStatus[] = ['New', 'Under Review', 'Shortlisted', 'Rejected'];
+const COLUMNS: CandidateStatus[] = ['New', 'Under Review', 'Shortlisted', 'Interview', 'Offer', 'Hired', 'Rejected'];
 
 const colConfig: Record<CandidateStatus, { badge: string; dot: string; accent: string; count_bg: string }> = {
   'New':           { badge: 'applied',       dot: 'bg-on-surface-subtle',      accent: 'bg-on-surface-subtle/40',    count_bg: 'bg-surface-high text-on-surface-variant' },
   'Under Review':  { badge: 'interview',     dot: 'bg-[#FCD34D]',              accent: 'bg-[#F59E0B]/25',            count_bg: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]' },
   'Shortlisted':   { badge: 'shortlisted',   dot: 'bg-[#818CF8]',              accent: 'bg-[#4F46E5]/30',            count_bg: 'bg-[rgba(79,70,229,0.15)] text-[#818CF8]' },
+  'Interview':     { badge: 'interview',     dot: 'bg-[#C084FC]',              accent: 'bg-[#9333EA]/30',            count_bg: 'bg-[rgba(147,51,234,0.15)] text-[#C084FC]' },
+  'Offer':         { badge: 'offer',         dot: 'bg-[#34D399]',              accent: 'bg-[#10B981]/30',            count_bg: 'bg-[rgba(16,185,129,0.15)] text-[#34D399]' },
+  'Hired':         { badge: 'hired',         dot: 'bg-[#10B981]',              accent: 'bg-[#059669]/30',            count_bg: 'bg-[rgba(5,150,105,0.15)] text-[#10B981]' },
   'Rejected':      { badge: 'rejected',      dot: 'bg-[#F87171]',              accent: 'bg-[#EF4444]/20',            count_bg: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]' },
 };
 
@@ -167,9 +170,13 @@ function SortableCandidateCard({ candidate, onClick }: { candidate: Candidate; o
 // ─── Column ───────────────────────────────────────────────────────────────────
 function Column({ id, items, onCardClick }: { id: CandidateStatus; items: Candidate[]; onCardClick: (c: Candidate) => void }) {
   const cfg = colConfig[id];
+  const { setNodeRef } = useDroppable({
+    id: id,
+  });
 
   return (
     <div
+      ref={setNodeRef}
       className="flex flex-col rounded-xl border border-glass-border w-72 shrink-0 min-h-[600px]"
       style={{ background: 'rgba(255,255,255,0.025)', backdropFilter: 'blur(8px)' }}
     >
@@ -447,104 +454,72 @@ export default function CandidatesPage() {
 
   const handleDragStart = (e: DragStartEvent) => {
     setDragActiveId(e.active.id as string);
-    // Explicitly attach current status to data to remember original status upon drop
-    const candidate = candidates.find(c => c.id === e.active.id);
-    if (candidate) {
-      e.active.data.current = { ...e.active.data.current, name: candidate.name, status: candidate.status };
-    }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const activeData = active.data.current;
-    const activeContainer = activeData?.status;
+    
+    // We get the active candidate's current status and the over container's status
+    const activeCandidate = candidates.find(c => c.id === active.id);
+    if (!activeCandidate) return;
+
+    const activeContainer = activeCandidate.status;
     const overContainer = COLUMNS.includes(over.id as CandidateStatus)
-      ? over.id
+      ? (over.id as CandidateStatus)
       : candidates.find(c => c.id === over.id)?.status;
+      
     if (!activeContainer || !overContainer || activeContainer === overContainer) return;
+    
     setCandidates(prev => {
       const overItems = prev.filter(c => c.status === overContainer);
       const overIndex = overItems.findIndex(c => c.id === over.id);
-      let newIndex = COLUMNS.includes(over.id as CandidateStatus) ? overItems.length + 1 :
-        overIndex >= 0 ? overIndex : overItems.length + 1;
+      
       const itemToMove = prev.find(c => c.id === active.id);
       if (!itemToMove) return prev;
-      return [...prev.filter(c => c.id !== active.id), { ...itemToMove, status: overContainer as CandidateStatus }];
+      
+      return [
+        ...prev.filter(c => c.id !== active.id),
+        { ...itemToMove, status: overContainer as CandidateStatus }
+      ];
     });
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setDragActiveId(null);
     if (!over) return;
     
-    // We use the specific initial status we cached in `onDragStart`
-    const originalStatus = active.data.current?.status;
-    const activeContainer = candidates.find(c => c.id === active.id)?.status || originalStatus;
-    
-    const overContainer = COLUMNS.includes(over.id as CandidateStatus)
-      ? over.id : candidates.find(c => c.id === over.id)?.status;
-      
-    if (originalStatus && overContainer) {
-      if (originalStatus === overContainer) {
-        setCandidates(prev => {
-          const inCtx = prev.filter(c => c.status === originalStatus);
-          const oldIdx = inCtx.findIndex(c => c.id === active.id);
-          const newIdx = inCtx.findIndex(c => c.id === over.id);
-          if (oldIdx !== newIdx) {
-            const reordered = arrayMove(inCtx, oldIdx, newIdx);
-            return [...prev.filter(c => c.status !== originalStatus), ...reordered];
-          }
-          return prev;
-        });
-      } else {
-        // Status changed via DnD to a column OR over another card in a different column
-        const newStatus = overContainer as CandidateStatus;
-        const candidateName = active.data.current?.name || 'Candidate';
-        const candidateId = active.id as string;
-        
-        // Save old status to local variable for undo logic (from drag start)
-        const oldStatus = originalStatus as CandidateStatus;
+    const activeCandidate = candidates.find(c => c.id === active.id);
+    if (!activeCandidate) return;
 
-        // Perform the API call
-        apiFetch(`/api/applications/${active.id}/status`, {
+    const overContainer = COLUMNS.includes(over.id as CandidateStatus)
+      ? (over.id as CandidateStatus)
+      : candidates.find(c => c.id === over.id)?.status;
+
+    if (!overContainer) return;
+
+    // Because of handleDragOver's optimistic update, activeCandidate.status is ALREADY the overContainer,
+    // so we just persist it directly. If we want to support re-ordering later within the same column, we'd do arrayMove.
+    // For now, let's just make the API call to save the new status.
+    
+    if (activeCandidate.status === overContainer) {
+      try {
+        const res = await apiFetch('/api/applications/' + active.id + '/status', {
           method: 'PATCH',
-          body: JSON.stringify({ status: newStatus })
-        })
-        .then(() => {
-          addToast({
-            type: 'success',
-            title: `Moved to ${newStatus}`,
-            description: `${candidateName} was moved to ${newStatus}`,
-            duration: 5000,
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                // Revert locally
-                setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, status: oldStatus } : c));
-                // Revert via API
-                apiFetch(`/api/applications/${candidateId}/status`, {
-                  method: 'PATCH',
-                  body: JSON.stringify({ status: oldStatus })
-                }).then(() => {
-                  addToast({ type: 'info', title: 'Action Undone', description: `${candidateName} moved back to ${oldStatus}` });
-                }).catch(err => {
-                  console.error('Failed to undo update status', err);
-                  addToast({ type: 'error', title: 'Undo Failed', description: 'Could not revert the candidate move.' });
-                  // Re-revert locally on fail
-                  setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, status: newStatus } : c));
-                });
-              }
-            }
-          });
-        })
-        .catch(err => {
-          console.error('Failed to update status', err);
-          addToast({ type: 'error', title: 'Failed to Connect', description: 'Could not move the candidate.' });
-          // Revert locally since API failed
-          setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, status: oldStatus } : c));
+          body: JSON.stringify({ status: overContainer })
         });
+        
+        if (!res.success) {
+          throw new Error(res.message || 'API rejected status update');
+        }
+
+        addToast({ title: 'Status updated', description: `Moved candidate to ${overContainer}`, type: 'success' });
+      } catch (err) {
+        console.error('Failed to update status:', err);
+        addToast({ title: 'Error', description: 'Failed to update candidate status', type: 'error' });
+        // REVERT to DB state on error
+        fetchCandidates();
       }
     }
   };
