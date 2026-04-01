@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start": "npm run app",
+    "start:clear": "npm run app:clear",
     "app": "cd app && npx expo start",
     "app:clear": "cd app && npx expo start --clear",
     "web": "cd web-portal && npm run dev",
     "backend": "cd backend && npm run dev"
   },
   "dependencies": {
-    "framer-motion": "^12.35.1",
+    "framer-motion": "^12.38.0",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.577.0"
   }
