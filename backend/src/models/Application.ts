@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type ApplicationStatus = 'New' | 'Under Review' | 'Shortlisted' | 'Rejected';
+export type ApplicationStatus = 'New' | 'Under Review' | 'Shortlisted' | 'Interview' | 'Offer' | 'Hired' | 'Rejected';
 
 export interface IApplication extends Document {
     jobId: mongoose.Types.ObjectId;
@@ -26,7 +26,7 @@ const ApplicationSchema: Schema = new Schema({
     }],
     relocationAnswer: { type: String },
     ctcAnswer: { type: String },
-    status: { type: String, enum: ['New', 'Under Review', 'Shortlisted', 'Rejected'], default: 'New' },
+    status: { type: String, enum: ['New', 'Under Review', 'Shortlisted', 'Interview', 'Offer', 'Hired', 'Rejected'], default: 'New' },
     appliedAt: { type: Date, default: Date.now }
 });
 
