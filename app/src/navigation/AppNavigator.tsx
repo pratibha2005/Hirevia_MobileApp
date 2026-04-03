@@ -3,13 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import HomeFeedScreen from '../screens/main/HomeFeedScreen';
+import JobSearchScreen from '../screens/main/JobSearchScreen';
 import JobDetailsScreen from '../screens/main/JobDetailsScreen';
 import ApplyFlowScreen from '../screens/main/ApplyFlowScreen';
 import ApplicationsScreen from '../screens/main/ApplicationsScreen';
@@ -20,26 +21,23 @@ const Tab = createBottomTabNavigator();
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const NAV = {
-  primary:     '#4F46E5',
-  primaryLight:'rgba(79, 70, 229, 0.15)',
-  inactive:    '#9CA3AF',
-  surface:     'transparent',
-  background:  '#F8FAFC',
+  primary:     '#1e3a5f', // Navy Indigo (Atelier)
+  inactive:    '#94a3b8', // Slate clean
+  background:  '#F7F9FB', // Surface Bright
 };
 
-// ─── Tab icon with badge ──────────────────────────────────────────────────────
+// ─── Tab icon with high-density minimal styling ──────────────────────────────
 function TabIcon({ name, focused, badge }: { name: string; focused: boolean; badge?: number }) {
   return (
     <View style={tabStyles.iconWrapper}>
-      {focused && <View style={tabStyles.activePill} />}
-      <Ionicons
+      <MaterialCommunityIcons
         name={name as any}
-        size={20}
+        size={22}
         color={focused ? NAV.primary : NAV.inactive}
       />
       {badge !== undefined && badge > 0 && (
         <View style={tabStyles.badge}>
-          <Text style={tabStyles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
+          <Text style={tabStyles.badgeText}>{badge}</Text>
         </View>
       )}
     </View>
@@ -47,18 +45,19 @@ function TabIcon({ name, focused, badge }: { name: string; focused: boolean; bad
 }
 
 const tabStyles = StyleSheet.create({
-  iconWrapper: { alignItems: 'center', justifyContent: 'center', position: 'relative', width: 36, height: 36 },
-  activePill:  { position: 'absolute', width: 36, height: 36, borderRadius: 12, backgroundColor: NAV.primaryLight },
-  badge:       { position: 'absolute', top: -2, right: -4, backgroundColor: '#EF4444', width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#FFF' },
-  badgeText:   { fontSize: 9, fontWeight: '800', color: '#FFF' },
+  iconWrapper: { alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  badge:       { position: 'absolute', top: -4, right: -6, backgroundColor: '#9e3f4e', // Archive error red
+                 minWidth: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center',
+                 borderWidth: 1.5, borderColor: '#F7F9FB' },
+  badgeText:   { fontSize: 7, fontWeight: '900', color: '#FFF' },
 });
 
 function CustomTabBarBackground() {
   return (
     <BlurView 
-      intensity={80} 
+      intensity={60} 
       tint="light" 
-      style={[StyleSheet.absoluteFill, { borderRadius: 24, overflow: 'hidden' }]} 
+      style={[StyleSheet.absoluteFill, { borderRadius: 40, overflow: 'hidden' }]} 
     />
   );
 }
@@ -70,10 +69,11 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused }) => {
-          let iconName = 'help';
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Applications') iconName = focused ? 'document-text' : 'document-text-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
+          let iconName = 'help-circle-outline';
+          if (route.name === 'Home') iconName = focused ? 'view-grid' : 'view-grid-outline';
+          else if (route.name === 'Search') iconName = focused ? 'magnify' : 'magnify';
+          else if (route.name === 'Applications') iconName = focused ? 'file-document' : 'file-document-outline';
+          else if (route.name === 'Profile') iconName = focused ? 'account' : 'account-outline';
           const badge = route.name === 'Applications' ? 2 : undefined;
           return <TabIcon name={iconName} focused={focused} badge={badge} />;
         },
@@ -81,36 +81,39 @@ function MainTabs() {
         tabBarActiveTintColor: NAV.primary,
         tabBarInactiveTintColor: NAV.inactive,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontFamily: 'InterSemiBold',
-          marginTop: 4,
+          fontSize: 8,
+          fontWeight: '800',
+          letterSpacing: 2,
+          marginTop: 2,
+          textTransform: 'uppercase',
         },
         tabBarBackground: CustomTabBarBackground,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 24,
-          left: 20,
-          right: 20,
-          height: 72,
-          paddingBottom: 8,
+          bottom: 40,
+          left: 60,
+          right: 60,
+          height: 64,
+          paddingBottom: 10,
           paddingTop: 8,
-          backgroundColor: 'rgba(255,255,255,0.4)',
+          backgroundColor: 'rgba(255,255,255,0.75)',
           borderTopWidth: 0,
-          borderRadius: 24,
+          borderRadius: 40,
           elevation: 0,
-          shadowColor: '#4F46E5',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.1,
-          shadowRadius: 20,
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.8)',
+          shadowColor: '#2a3439',
+          shadowOffset: { width: 0, height: 16 },
+          shadowOpacity: 0.18,
+          shadowRadius: 40,
+          borderWidth: 1.5,
+          borderColor: 'rgba(255,255,255,0.95)',
         },
         tabBarItemStyle: {
-          paddingTop: 6,
+          paddingTop: 4,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeFeedScreen} options={{ title: 'Discover' }} />
+      <Tab.Screen name="Search" component={JobSearchScreen} options={{ title: 'Search' }} />
       <Tab.Screen name="Applications" component={ApplicationsScreen} options={{ title: 'Applied' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
     </Tab.Navigator>

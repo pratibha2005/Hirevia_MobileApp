@@ -91,22 +91,22 @@ function FadeSlide({ children, delay = 0, style }: { children: React.ReactNode; 
 }
 
 // ─── Bar Chart ────────────────────────────────────────────────────────────────
-function BarChart() {
+// ─── Bar Chart ────────────────────────────────────────────────────────────────
+function BarChart({ data }: { data: typeof CHART_DATA }) {
   useEffect(() => {
-    CHART_DATA.forEach((_, i) => BAR_ANIMS[i].setValue(0));
-    const anims = BAR_ANIMS.map((anim, i) =>
+    BAR_ANIMS.forEach((anim, i) => {
+      anim.setValue(0);
       Animated.sequence([
         Animated.delay(400 + i * 60),
         Animated.spring(anim, { toValue: 1, useNativeDriver: false, tension: 80, friction: 8 }),
-      ])
-    );
-    Animated.parallel(anims).start();
-  }, []);
+      ]).start();
+    });
+  }, [data]);
 
   return (
     <View style={styles.chartContainer}>
-      {CHART_DATA.map((bar, i) => {
-        const isLast = i === CHART_DATA.length - 1;
+      {data.map((bar, i) => {
+        const isLast = i === data.length - 1;
         const barHeight = BAR_ANIMS[i].interpolate({
           inputRange: [0, 1],
           outputRange: [4, bar.value * MAX_BAR_HEIGHT],
@@ -136,17 +136,22 @@ function BarChart() {
 export default function HomeFeedScreen() {
   const navigation = useNavigation<any>();
   const [jobs, setJobs] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userName, setUserName] = useState('there');
+  const [dynamicChart, setDynamicChart] = useState(CHART_DATA);
 
-  const fetchJobs = async (isRefresh = false) => {
+  const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/jobs`);
-      const data = await res.json();
-      if (data.success) {
-        setJobs(data.jobs.map((j: any) => ({
+      const token = await AsyncStorage.getItem('token');
+      
+      // Fetch Jobs
+      const jobRes = await fetch(`${API_BASE_URL}/api/jobs`);
+      const jobData = await jobRes.json();
+      if (jobData.success) {
+        const jobList = jobData.jobs.map((j: any) => ({
           id: j._id,
           title: j.title,
           company: j.companyId?.name || 'Unknown Company',
@@ -157,10 +162,27 @@ export default function HomeFeedScreen() {
           logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(j.companyId?.name || 'C')}&background=0F4C5C&color=fff&size=120`,
           description: j.description,
           screeningQuestions: j.screeningQuestions || [],
-        })));
+        }));
+        setJobs(jobList);
+        
+        // Simulating Market Pulse
+        const newChart = CHART_DATA.map(d => ({
+          ...d,
+          value: Math.min(1.0, d.value * (0.9 + Math.random() * 0.2) + (jobList.length / 100)),
+        }));
+        setDynamicChart(newChart);
+      }
+
+      // Fetch Applications
+      if (token) {
+        const appRes = await fetch(`${API_BASE_URL}/api/applications/my`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const appData = await appRes.json();
+        if (appData.success) setApplications(appData.applications);
       }
     } catch (e) {
-      console.error('Failed to fetch jobs', e);
+      console.error('Failed to fetch data', e);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -168,14 +190,25 @@ export default function HomeFeedScreen() {
   };
 
   useEffect(() => {
-    fetchJobs();
+    fetchData();
     AsyncStorage.getItem('user').then(u => {
-      if (u) {
-        const parsed = JSON.parse(u);
-        setUserName(parsed.name?.split(' ')[0] || 'there');
-      }
+      if (u) setUserName(JSON.parse(u).name?.split(' ')[0] || 'there');
     });
   }, []);
+
+  // Derive Activities
+  const displayActivities = applications.length > 0 
+    ? applications.slice(0, 3).map((app, i) => ({
+        id: app._id,
+        time: new Date(app.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase(),
+        title: app.status === 'New' ? 'Application Sent' : app.status,
+        desc: `Your application for ${app.jobId?.title} at ${app.jobId?.companyId?.name} is ${app.status.toLowerCase()}.`,
+        isLast: i === applications.length - 1 || i === 2,
+        active: app.status !== 'Rejected',
+      }))
+    : ACTIVITIES;
+
+  const activeMotion = applications.find(a => a.status !== 'Rejected') || null;
 
   return (
     <View style={styles.root}>
@@ -184,62 +217,51 @@ export default function HomeFeedScreen() {
         <ScrollView 
           contentContainerStyle={styles.scroll} 
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchJobs(true)} tintColor={C.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={C.primary} />}
         >
-
-          {/* ── Header ── */}
+          {/* Header */}
           <FadeSlide delay={0} style={styles.header}>
             <View style={styles.headerLeft}>
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={16} color={C.primary} />
-              </View>
+              <View style={styles.avatar}><Ionicons name="person" size={16} color={C.primary} /></View>
               <Text style={styles.workspaceLabel}>Hello, {userName} 👋</Text>
             </View>
-            <TouchableOpacity hitSlop={{top:10, bottom:10, left:10, right:10}}>
+            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
               <Ionicons name="search" size={20} color={C.onSurface} />
             </TouchableOpacity>
           </FadeSlide>
 
-          {/* ── Market Pulse ── */}
+          {/* Market Pulse */}
           <FadeSlide delay={80}>
             <Text style={styles.sectionLabel}>MARKET PULSE</Text>
-            <Text style={styles.pulseHeadline}>
-              Your profile is gaining{'\n'}
-              <Text style={styles.pulseHighlight}>momentum</Text> in Paris.
-            </Text>
-            <View style={styles.pulseStatRow}>
-              <Text style={styles.pulseStat}>+12%</Text>
-              <Text style={styles.pulseStatLabel}>reach this week</Text>
-            </View>
-            <BarChart />
+            <Text style={styles.pulseHeadline}>Your profile is gaining <Text style={styles.pulseHighlight}>momentum</Text> in your area.</Text>
+            <BarChart data={dynamicChart} />
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* ── In Motion: Pristine Minimal ── */}
+          {/* In Motion */}
           <FadeSlide delay={160}>
             <Text style={styles.sectionLabel}>IN MOTION</Text>
-            
             <View style={styles.cleanMotionCard}>
               <View style={styles.cleanMotionHeaderRow}>
-                <View style={styles.cleanStagePill}>
-                  <Text style={styles.cleanStageText}>INTERVIEW</Text>
+                <View style={[styles.cleanStagePill, activeMotion?.status === 'Rejected' && { backgroundColor: '#fee2e2' }]}>
+                  <Text style={[styles.cleanStageText, activeMotion?.status === 'Rejected' && { color: '#ef4444' }]}>
+                    {(activeMotion?.status || 'No Active Apps').toUpperCase()}
+                  </Text>
                 </View>
-                <Text style={styles.cleanDateText}>TOMORROW, 10:00 AM</Text>
+                <Text style={styles.cleanDateText}>{activeMotion ? new Date(activeMotion.appliedAt).toLocaleDateString().toUpperCase() : 'TODAY'}</Text>
               </View>
-
-              <Text style={styles.cleanCompanyText}>Apple</Text>
-              <Text style={styles.cleanRoleText}>Senior Product Designer</Text>
-              
-              <View style={styles.cleanDivider} />
-
+              <Text style={styles.cleanCompanyText}>{activeMotion?.jobId?.companyId?.name || 'Explore Opportunities'}</Text>
+              <Text style={styles.cleanRoleText}>{activeMotion?.jobId?.title || 'Start applying to see updates'}</Text>
               <View style={styles.cleanActionRow}>
                 <View style={styles.cleanDurationBox}>
                   <Ionicons name="time-outline" size={14} color={C.onSurfaceVar} />
-                  <Text style={styles.cleanDurationText}>60 Min</Text>
+                  <Text style={styles.cleanDurationText}>{activeMotion ? 'Track Process' : 'Browse Jobs'}</Text>
                 </View>
-                
-                <TouchableOpacity style={styles.cleanJoinBtn}>
-                  <Text style={styles.cleanJoinBtnText}>JOIN CALL</Text>
+                <TouchableOpacity 
+                  style={styles.cleanJoinBtn}
+                  onPress={() => activeMotion ? navigation.navigate('Applications') : navigation.navigate('Search')}
+                >
+                  <Text style={styles.cleanJoinBtnText}>{activeMotion ? 'VIEW STATUS' : 'FIND JOBS'}</Text>
                   <Ionicons name="arrow-forward" size={14} color="#FFF" />
                 </TouchableOpacity>
               </View>
@@ -247,71 +269,50 @@ export default function HomeFeedScreen() {
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* ── Discover ── */}
+          {/* Discover */}
           <FadeSlide delay={240}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionLabel}>CURATED FOR YOU</Text>
                 <Text style={styles.sectionTitle}>Discover</Text>
               </View>
-              <TouchableOpacity>
-                <Text style={styles.seeAll}>SEE ALL</Text>
-              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Search')}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
             </View>
-
             <View style={{ marginHorizontal: -24 }}>
-              {loading ? (
-                <ActivityIndicator size="large" color={C.primary} style={{ marginTop: 20 }} />
-              ) : (
+              {loading ? <ActivityIndicator size="large" color={C.primary} style={{ marginTop: 20 }} /> : (
                 <FlatList
                   horizontal
                   data={jobs}
                   keyExtractor={(item) => item.id}
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ paddingLeft: 24, paddingRight: 48 }}
-                  snapToInterval={width * 0.65 + 16}
-                  snapToAlignment="start"
-                  decelerationRate="fast"
                   renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      style={styles.jobCard}
-                      activeOpacity={0.9}
-                      onPress={() => navigation.navigate('JobDetails', { job: item })}
-                    >
-                      <Image source={{ uri: item.logo }} style={styles.jobImage} resizeMode="cover" />
+                    <TouchableOpacity style={styles.jobCard} onPress={() => navigation.navigate('JobDetails', { job: item })}>
+                      <Image source={{ uri: item.logo }} style={styles.jobImage} />
                       <View style={styles.jobCardContent}>
                         <Text style={styles.jobTags}>{(Array.isArray(item.tags) ? item.tags.join(' • ') : item.tags || '').toUpperCase()}</Text>
                         <Text style={styles.jobTitle} numberOfLines={1}>{item.title}</Text>
-                        <Text style={styles.jobCompany} numberOfLines={1}>{item.company}</Text>
+                        <Text style={styles.jobCompany}>{item.company}</Text>
                         <Text style={styles.jobSalary}>{item.salary}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
-                  ListEmptyComponent={
-                    <View style={styles.emptyState}>
-                      <Ionicons name="briefcase-outline" size={48} color={C.onSurfaceVar} />
-                      <Text style={styles.emptyText}>No jobs available right now.</Text>
-                    </View>
-                  }
                 />
               )}
             </View>
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* ── Recent Activity ── */}
+          {/* Recent Activity */}
           <FadeSlide delay={400}>
             <Text style={styles.sectionLabel}>RECENT ACTIVITY</Text>
             <View style={styles.activityList}>
-              {ACTIVITIES.map((item) => (
+              {displayActivities.map((item: any) => (
                 <View key={item.id} style={styles.activityItem}>
-                  {/* Timeline Column */}
                   <View style={styles.timelineCol}>
                     <View style={[styles.timelineDot, item.active && styles.timelineDotActive]} />
                     {!item.isLast && <View style={styles.timelineLine} />}
                   </View>
-
-                  {/* Content */}
                   <View style={styles.activityContent}>
                     <Text style={styles.activityTime}>{item.time}</Text>
                     <Text style={styles.activityTitle}>{item.title}</Text>
@@ -321,7 +322,6 @@ export default function HomeFeedScreen() {
               ))}
             </View>
           </FadeSlide>
-
           <View style={{ height: 110 }} />
         </ScrollView>
       </SafeAreaView>
