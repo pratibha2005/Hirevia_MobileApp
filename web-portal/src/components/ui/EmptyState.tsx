@@ -7,6 +7,7 @@ import {
   FileText, Eye, CheckSquare, AlertCircle, Inbox
 } from 'lucide-react';
 import { Button } from './button';
+import { EmptyStateAnimation } from './EmptyStateAnimation';
 import { cn } from '@/lib/utils';
 
 type EmptyStateType = 
@@ -111,19 +112,7 @@ export function EmptyState({
       )}
     >
       {/* Animated Icon */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={cn(
-          'mb-6 p-4 rounded-2xl opacity-75',
-        )}
-        style={{
-          background: `linear-gradient(135deg, rgba(79,70,229,0.1), rgba(6,182,212,0.1))`,
-        }}
-      >
-        <div className="text-on-surface-variant">{displayIcon}</div>
-      </motion.div>
+      <EmptyStateAnimation />
 
       {/* Content */}
       <motion.div

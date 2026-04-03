@@ -16,6 +16,7 @@ import {
   CheckCircle2, Calendar, MessageSquare, ExternalLink, MoreHorizontal,
   TrendingUp, Award
 } from 'lucide-react';
+import { SuccessAnimation } from '@/components/ui/SuccessAnimation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext, closestCorners, KeyboardSensor, PointerSensor,
@@ -509,6 +510,10 @@ export default function CandidatesPage() {
           method: 'PATCH',
           body: JSON.stringify({ status: overContainer })
         });
+        if (overContainer === 'Hired') {
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2500);
+        }
         
         if (!res.success) {
           throw new Error(res.message || 'API rejected status update');
@@ -621,6 +626,7 @@ export default function CandidatesPage() {
             ) : null}
           </DragOverlay>
         </DndContext>
+      {showSuccess && <SuccessAnimation onComplete={() => setShowSuccess(false)} />}
       </div>
 
       {/* Candidate Drawer */}

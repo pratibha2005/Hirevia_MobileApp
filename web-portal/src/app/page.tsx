@@ -18,7 +18,7 @@ const applicationsData = [
   { name: "Wed", apps: 15 },
   { name: "Thu", apps: 22 },
   { name: "Fri", apps: 30 },
-  { name: "Sat", apps: 10 },
+  { name: "Sat", apps: 10 }, 
   { name: "Sun", apps: 8 },
 ];
 
