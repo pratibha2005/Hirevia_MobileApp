@@ -1,0 +1,27 @@
+
+> web-portal@0.1.0 dev
+> next dev
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/yannhometeam/Documents/Hirevia/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/yannhometeam/Documents/Hirevia/web-portal/package-lock.json
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:3000
+   - Network:      http://10.88.116.236:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling / ...
+ ✓ Compiled / in 1379ms (2513 modules)
+ HEAD / 200 in 1658ms
+ ✓ Compiled in 146ms (1185 modules)
+ ✓ Compiled in 110ms (1171 modules)
+ ✓ Compiled in 162ms (1185 modules)
+ ✓ Compiled /jobs in 326ms (2101 modules)
+ GET /jobs 200 in 554ms
+ GET /jobs 200 in 46ms

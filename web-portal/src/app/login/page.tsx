@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ThemeToggleAuth } from '@/components/auth/ThemeToggleAuth';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Zap, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
@@ -52,11 +53,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#080D1C' }}>
+    <div className="min-h-screen flex bg-background text-on-surface transition-colors duration-300" >
       {/* Left panel — branding */}
       <div
-        className="hidden lg:flex lg:w-[45%] relative flex-col justify-between p-12 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0D1228 0%, #131830 100%)' }}
+        className="hidden lg:flex lg:w-[45%] relative flex-col justify-between p-12 overflow-hidden bg-surface-lowest border-r border-glass-border"
       >
         {/* Background glows */}
         <div className="absolute -top-32 -left-20 w-[500px] h-[500px] rounded-full bg-[#4F46E5]/10 blur-[120px] pointer-events-none" />
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 move faster.
               </span>
             </h1>
-            <p className="text-[#9CA3AF] text-lg leading-relaxed max-w-sm">
+            <p className="text-on-surface-variant text-lg leading-relaxed max-w-sm">
               Your end-to-end recruitment platform. Manage pipelines, schedule interviews, and find your next great hire — all in one place.
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                 <p className="text-2xl font-extrabold bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] bg-clip-text text-transparent">
                   {s.value}
                 </p>
-                <p className="text-[11px] text-[#6B7280] font-semibold uppercase tracking-wider mt-1">{s.label}</p>
+                <p className="text-[11px] text-on-surface-subtle font-semibold uppercase tracking-wider mt-1">{s.label}</p>
               </div>
             ))}
           </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
           className="relative z-10 p-5 rounded-2xl"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-[#D1D5DB] text-sm leading-relaxed italic">
+          <p className="text-on-surface text-sm leading-relaxed italic">
             "HireVia cut our time-to-hire in half. The pipeline view is a game-changer for our recruiting team."
           </p>
           <div className="flex items-center gap-3 mt-4">
@@ -130,13 +130,14 @@ export default function LoginPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-white">Sarah Mitchell</p>
-              <p className="text-[10px] text-[#6B7280]">Head of Talent, Acme Corp</p>
+              <p className="text-[10px] text-on-surface-subtle">Head of Talent, Acme Corp</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Right panel — form */}
+      <ThemeToggleAuth />
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative">
         {/* Ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#4F46E5]/5 blur-[120px] pointer-events-none" />
@@ -159,17 +160,17 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h2 className="text-3xl font-extrabold text-white tracking-tight mb-2">Welcome back</h2>
-            <p className="text-[#9CA3AF] text-sm">Sign in to your HR dashboard to manage your hiring pipeline.</p>
+            <p className="text-on-surface-variant text-sm">Sign in to your HR dashboard to manage your hiring pipeline.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                 <input
                   id="login-email"
                   type="email"
@@ -177,7 +178,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="hr@yourcompany.com"
                   autoComplete="email"
-                  className="w-full h-12 rounded-xl pl-10 pr-4 text-sm text-white placeholder:text-[#4B5563] focus:outline-none transition-all"
+                  className="w-full h-12 rounded-xl pl-10 pr-4 text-sm text-white placeholder:text-on-surface-subtle focus:outline-none transition-all"
                   style={{
                     background: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(255,255,255,0.10)',
@@ -190,11 +191,11 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
@@ -202,7 +203,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="w-full h-12 rounded-xl pl-10 pr-12 text-sm text-white placeholder:text-[#4B5563] focus:outline-none transition-all"
+                  className="w-full h-12 rounded-xl pl-10 pr-12 text-sm text-white placeholder:text-on-surface-subtle focus:outline-none transition-all"
                   style={{
                     background: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(255,255,255,0.10)',
@@ -213,7 +214,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle hover:text-on-surface-variant transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -227,7 +228,7 @@ export default function LoginPage() {
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
-                  className="flex items-center gap-2.5 p-3.5 rounded-xl text-sm text-[#F87171]"
+                  className="flex items-center gap-2.5 p-3.5 rounded-xl text-sm text-danger"
                   style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
@@ -262,7 +263,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
-            <span className="text-[11px] text-[#4B5563] font-medium">New to HireVia?</span>
+            <span className="text-[11px] text-on-surface-subtle font-medium">New to HireVia?</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
           </div>
 
@@ -278,9 +279,9 @@ export default function LoginPage() {
             Create an HR Account
           </Link>
 
-          <p className="text-center text-[11px] text-[#4B5563] mt-6">
+          <p className="text-center text-[11px] text-on-surface-subtle mt-6">
             Are you an applicant?{' '}
-            <span className="text-[#6366F1] font-semibold cursor-default">Use the mobile app instead.</span>
+            <span className="text-primary font-semibold cursor-default">Use the mobile app instead.</span>
           </p>
         </motion.div>
       </div>

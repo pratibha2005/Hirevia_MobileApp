@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ThemeToggleAuth } from '@/components/auth/ThemeToggleAuth';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -73,7 +74,7 @@ export default function SignupPage() {
     }
   };
 
-  const inputClass = `w-full h-12 rounded-xl text-sm text-white placeholder:text-[#4B5563] focus:outline-none transition-all`;
+  const inputClass = `w-full h-12 rounded-xl text-sm text-white placeholder:text-on-surface-subtle focus:outline-none transition-all`;
   const baseStyle = {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.10)',
@@ -88,7 +89,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#080D1C' }}>
+    <div className="min-h-screen flex bg-background text-on-surface transition-colors duration-300" >
       {/* Left panel */}
       <div
         className="hidden lg:flex lg:w-[42%] relative flex-col justify-between p-12 overflow-hidden"
@@ -123,7 +124,7 @@ export default function SignupPage() {
                 team faster.
               </span>
             </h1>
-            <p className="text-[#9CA3AF] text-base leading-relaxed max-w-sm">
+            <p className="text-on-surface-variant text-base leading-relaxed max-w-sm">
               Join hundreds of companies already using HireVia to streamline their entire recruitment workflow.
             </p>
           </div>
@@ -137,10 +138,10 @@ export default function SignupPage() {
               'Real-time team collaboration',
             ].map((f) => (
               <div key={f} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#4F46E5]/20 border border-[#4F46E5]/30 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-3 h-3 text-[#6366F1]" />
+                <div className="w-5 h-5 rounded-full bg-[#4F46E5]/20 border border-primary/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-3 h-3 text-primary" />
                 </div>
-                <span className="text-sm text-[#D1D5DB]">{f}</span>
+                <span className="text-sm text-on-surface">{f}</span>
               </div>
             ))}
           </div>
@@ -156,12 +157,13 @@ export default function SignupPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-white">Free for small teams</p>
-            <p className="text-[11px] text-[#6B7280]">Up to 3 HR users · Unlimited candidates</p>
+            <p className="text-[11px] text-on-surface-subtle">Up to 3 HR users · Unlimited candidates</p>
           </div>
         </div>
       </div>
 
       {/* Right panel — form */}
+      <ThemeToggleAuth />
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative overflow-y-auto">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#4F46E5]/5 blur-[120px] pointer-events-none" />
 
@@ -189,16 +191,16 @@ export default function SignupPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12 space-y-4"
               >
-                <div className="w-16 h-16 rounded-full bg-[#22C55E]/15 border border-[#22C55E]/30 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8 text-[#22C55E]" />
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/15 border border-success/30 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-success" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">Account Created!</h2>
-                <p className="text-[#9CA3AF] text-sm">
+                <p className="text-on-surface-variant text-sm">
                   Your HR account is ready. Redirecting to login…
                 </p>
                 <div className="flex justify-center">
                   <div className="w-6 h-6">
-                    <Loader2 className="w-6 h-6 text-[#6366F1] animate-spin" />
+                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
                   </div>
                 </div>
               </motion.div>
@@ -209,7 +211,7 @@ export default function SignupPage() {
             <>
               <div className="mb-8">
                 <h2 className="text-3xl font-extrabold text-white tracking-tight mb-2">Create HR Account</h2>
-                <p className="text-[#9CA3AF] text-sm">
+                <p className="text-on-surface-variant text-sm">
                   Set up your company's recruiting workspace in seconds.
                 </p>
               </div>
@@ -217,11 +219,11 @@ export default function SignupPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Full Name */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                     <input
                       id="signup-name"
                       type="text"
@@ -238,11 +240,11 @@ export default function SignupPage() {
 
                 {/* Work Email */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                     Work Email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                     <input
                       id="signup-email"
                       type="email"
@@ -261,11 +263,11 @@ export default function SignupPage() {
                 {/* Company fields row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                    <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                       Company Name
                     </label>
                     <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#4B5563]" />
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-subtle" />
                       <input
                         id="signup-company-name"
                         type="text"
@@ -280,11 +282,11 @@ export default function SignupPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                    <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                       Email Domain
                     </label>
                     <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#4B5563]" />
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-subtle" />
                       <input
                         id="signup-domain"
                         type="text"
@@ -302,11 +304,11 @@ export default function SignupPage() {
 
                 {/* Password */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                     <input
                       id="signup-password"
                       type={showPassword ? 'text' : 'password'}
@@ -322,7 +324,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle hover:text-on-surface-variant transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -331,11 +333,11 @@ export default function SignupPage() {
 
                 {/* Confirm Password */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6B7280]">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-subtle">
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                     <input
                       id="signup-confirm-password"
                       type={showConfirm ? 'text' : 'password'}
@@ -351,7 +353,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle hover:text-on-surface-variant transition-colors"
                     >
                       {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -365,7 +367,7 @@ export default function SignupPage() {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className="flex items-center gap-2.5 p-3.5 rounded-xl text-sm text-[#F87171]"
+                      className="flex items-center gap-2.5 p-3.5 rounded-xl text-sm text-danger"
                       style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                     >
                       <AlertCircle className="w-4 h-4 shrink-0" />
@@ -399,7 +401,7 @@ export default function SignupPage() {
 
               <div className="flex items-center gap-3 my-6">
                 <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
-                <span className="text-[11px] text-[#4B5563] font-medium">Already have an account?</span>
+                <span className="text-[11px] text-on-surface-subtle font-medium">Already have an account?</span>
                 <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
               </div>
 
