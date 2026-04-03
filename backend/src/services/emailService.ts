@@ -11,6 +11,7 @@ type InterviewEmailPayload = {
     startTime: string;
     endTime: string;
     mode: string;
+    meetingLink?: string;
     notes?: string;
 };
 
@@ -77,6 +78,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
     const titleSafe = escapeHtml(payload.title);
     const jobTitleSafe = payload.jobTitle ? escapeHtml(payload.jobTitle) : '';
     const modeSafe = escapeHtml(payload.mode);
+    const meetingLinkSafe = payload.meetingLink ? escapeHtml(payload.meetingLink) : '';
     const notesSafe = payload.notes ? escapeHtml(payload.notes) : '';
     const recruiterNameSafe = escapeHtml(payload.recruiterName);
     const recruiterEmailSafe = escapeHtml(payload.recruiterEmail);
@@ -93,6 +95,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         `Date: ${interviewDateReadable}`,
         `Time: ${startTimeReadable} - ${endTimeReadable}`,
         `Mode: ${payload.mode}`,
+        payload.meetingLink ? `Meeting Link: ${payload.meetingLink}` : null,
         payload.notes ? `Notes: ${payload.notes}` : null,
         '',
         `Recruiter: ${payload.recruiterName}`,
@@ -146,9 +149,10 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
                                     <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${startTimeSafe} - ${endTimeSafe}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
-                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
                                 </tr>
+                                ${payload.meetingLink ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Google Meet Link</td><td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}"><a href="${meetingLinkSafe}" target="_blank" rel="noopener noreferrer" style="color: #0f4c5c; word-break: break-all;">${meetingLinkSafe}</a></td></tr>` : ''}
                                 ${payload.notes ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600;">Notes</td><td style="padding: 14px 16px; color: #111827; font-size: 14px;">${notesSafe}</td></tr>` : ''}
                             </table>
 

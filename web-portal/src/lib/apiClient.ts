@@ -37,16 +37,30 @@ export async function apiFetch<T = any>(
   return data;
 }
 
+function dispatchUserUpdated(user: any) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('user-updated', { detail: user }));
+}
+
 /** Save auth session to localStorage */
 export function saveAuthSession(token: string, user: object) {
   localStorage.setItem('hirevia_token', token);
   localStorage.setItem('hirevia_user', JSON.stringify(user));
+  localStorage.setItem('user', JSON.stringify(user));
+  dispatchUserUpdated(user);
+}
+
+/** Update only the stored user object */
+export function updateStoredUser(user: object) {
+  localStorage.setItem('hirevia_user', JSON.stringify(user));
+  localStorage.setItem('user', JSON.stringify(user));
+  dispatchUserUpdated(user);
 }
 
 /** Read current user from localStorage */
 export function getStoredUser(): any | null {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem('hirevia_user');
+  const raw = localStorage.getItem('hirevia_user') || localStorage.getItem('user');
   return raw ? JSON.parse(raw) : null;
 }
 
@@ -54,6 +68,7 @@ export function getStoredUser(): any | null {
 export function clearAuthSession() {
   localStorage.removeItem('hirevia_token');
   localStorage.removeItem('hirevia_user');
+  localStorage.removeItem('user');
 }
 
 /** Check if a valid token exists */
