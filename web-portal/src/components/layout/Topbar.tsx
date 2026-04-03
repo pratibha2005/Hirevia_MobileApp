@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Sun, Moon } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getStoredUser } from '@/lib/apiClient';
+import { useTheme } from '@/context/ThemeContext';
 
 const pageLabels: Record<string, { title: string; subtitle: string }> = {
   '/':            { title: 'Dashboard',         subtitle: 'Global overview & analytics' },
@@ -40,6 +41,7 @@ export function Topbar() {
   const router = useRouter();
   const page = pageLabels[pathname] || { title: 'HireVia', subtitle: '' };
   const [searchVal, setSearchVal] = useState('');
+  const { theme, toggleTheme } = useTheme();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +51,7 @@ export function Topbar() {
 
   return (
     <div
-      className="h-[64px] sticky top-0 z-20 flex items-center justify-between px-6 shrink-0"
-      style={{
-        background: 'rgba(11,16,32,0.80)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-      }}
+      className="h-[64px] sticky top-0 z-20 flex items-center justify-between px-6 shrink-0 bg-background/80 backdrop-blur-md border-b border-glass-border"
     >
       <div className="flex flex-col justify-center min-w-0">
         <h1 className="text-[17px] font-display font-semibold text-on-surface leading-tight tracking-tight truncate">
@@ -79,7 +75,14 @@ export function Topbar() {
         </form>
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-full hover:bg-surface-mid transition-colors text-on-surface-variant hover:text-on-surface"
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <TopbarUser />
       </div>
     </div>

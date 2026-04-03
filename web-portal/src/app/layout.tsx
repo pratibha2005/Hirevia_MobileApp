@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -30,8 +31,10 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className={`${inter.variable} ${manrope.variable}`} suppressHydrationWarning>
-            <body className="min-h-screen antialiased" style={{ background: '#0B1020', color: '#E5E7EB', fontFamily: 'Inter, sans-serif' }}>
-                <AppShell>{children}</AppShell>
+            <body className="min-h-screen antialiased transition-colors duration-300">
+                <ThemeProvider>
+                    <AppShell>{children}</AppShell>
+                </ThemeProvider>
             </body>
         </html>
     );

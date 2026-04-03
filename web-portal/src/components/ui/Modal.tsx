@@ -41,40 +41,27 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-transparent"
           />
 
           {/* Modal Panel */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-12 pb-6 sm:pt-16 sm:pb-8 pointer-events-none overflow-y-auto">
             <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 16 }}
+              initial={{ opacity: 0, scale: 0.94, y: 18 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 8 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
               transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-              className={`relative w-full ${sizeMap[size]} pointer-events-auto shadow-modal`}
-              style={{
-                background: 'rgba(10,14,32,0.94)',
-                backdropFilter: 'blur(32px)',
-                WebkitBackdropFilter: 'blur(32px)',
-                borderRadius: '20px',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
+              className={`relative w-full ${sizeMap[size]} pointer-events-auto overflow-hidden rounded-[20px] border border-slate-200 bg-white text-slate-900 shadow-none dark:border-slate-700 dark:bg-slate-950 dark:text-on-surface`}
             >
-              {/* Gradient top stripe */}
-              <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-t-full" />
-
-              {/* Subtle corner glow */}
-              <div className="absolute -top-16 -left-16 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
               {/* Header */}
               {title && (
-                <div className="flex items-center justify-between px-6 py-5 border-b border-glass-border">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700">
                   <h2 className="text-base font-display font-semibold text-on-surface tracking-tight">
                     {title}
                   </h2>
                   <button
                     onClick={onClose}
-                    className="flex items-center justify-center w-8 h-8 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-high transition-all group"
+                    className="flex items-center justify-center w-8 h-8 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group"
                   >
                     <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
                   </button>

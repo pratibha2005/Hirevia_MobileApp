@@ -84,7 +84,7 @@ export function Sidebar() {
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                   'transition-colors duration-200 ease-in-out relative group',
                   isActive
-                    ? 'text-white'
+                    ? 'text-primary font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface'
                 )}
               >
@@ -164,13 +164,7 @@ export function Sidebar() {
     <>
       {/* Desktop Sidebar */}
       <div
-        className="hidden md:flex w-[220px] flex-col h-screen fixed left-0 top-0 z-30 select-none"
-        style={{
-          background: 'rgba(9,12,26,0.88)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderRight: '1px solid rgba(255,255,255,0.08)',
-        }}
+        className="hidden md:flex w-[220px] flex-col h-screen fixed left-0 top-0 z-30 select-none bg-surface-base/90 backdrop-blur-xl border-r border-glass-border"
       >
         {renderSidebarContent(false)}
       </div>
@@ -206,13 +200,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-              className="md:hidden flex w-[220px] flex-col h-screen fixed left-0 top-0 z-40 select-none"
-              style={{
-                background: 'rgba(9,12,26,0.88)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                borderRight: '1px solid rgba(255,255,255,0.08)',
-              }}
+              className="md:hidden flex w-[220px] flex-col h-screen fixed left-0 top-0 z-40 select-none bg-surface-base/95 backdrop-blur-xl border-r border-glass-border"
             >
               {renderSidebarContent(true)}
             </motion.div>

@@ -49,13 +49,40 @@ const toReadableDate = (isoDate: string) => {
     return date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
 };
 
+const toReadableTime = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours || 0, minutes || 0, 0, 0);
+    return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+};
+
+const escapeHtml = (value: string) => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload) => {
     const transporter = getTransporter();
 
     const interviewDateReadable = toReadableDate(payload.interviewDate);
+    const startTimeReadable = toReadableTime(payload.startTime);
+    const endTimeReadable = toReadableTime(payload.endTime);
     const subject = `Interview Scheduled: ${payload.title}`;
     const senderAddress = process.env.SMTP_FROM || process.env.SMTP_USER || payload.recruiterEmail;
     const senderName = payload.recruiterName || 'Recruiter';
+
+    const candidateNameSafe = escapeHtml(payload.candidateName);
+    const titleSafe = escapeHtml(payload.title);
+    const jobTitleSafe = payload.jobTitle ? escapeHtml(payload.jobTitle) : '';
+    const modeSafe = escapeHtml(payload.mode);
+    const notesSafe = payload.notes ? escapeHtml(payload.notes) : '';
+    const recruiterNameSafe = escapeHtml(payload.recruiterName);
+    const recruiterEmailSafe = escapeHtml(payload.recruiterEmail);
+    const interviewDateSafe = escapeHtml(interviewDateReadable);
+    const startTimeSafe = escapeHtml(startTimeReadable);
+    const endTimeSafe = escapeHtml(endTimeReadable);
 
     const text = [
         `Hi ${payload.candidateName},`,
@@ -64,7 +91,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         `Title: ${payload.title}`,
         payload.jobTitle ? `Job: ${payload.jobTitle}` : null,
         `Date: ${interviewDateReadable}`,
-        `Time: ${payload.startTime} - ${payload.endTime}`,
+        `Time: ${startTimeReadable} - ${endTimeReadable}`,
         `Mode: ${payload.mode}`,
         payload.notes ? `Notes: ${payload.notes}` : null,
         '',
@@ -78,22 +105,80 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         .join('\n');
 
     const html = `
-        <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
-            <p>Hi ${payload.candidateName},</p>
-            <p>Your interview has been scheduled.</p>
-            <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
-                <tbody>
-                    <tr><td style="padding: 6px 0; font-weight: 600;">Title</td><td style="padding: 6px 0;">${payload.title}</td></tr>
-                    ${payload.jobTitle ? `<tr><td style="padding: 6px 0; font-weight: 600;">Job</td><td style="padding: 6px 0;">${payload.jobTitle}</td></tr>` : ''}
-                    <tr><td style="padding: 6px 0; font-weight: 600;">Date</td><td style="padding: 6px 0;">${interviewDateReadable}</td></tr>
-                    <tr><td style="padding: 6px 0; font-weight: 600;">Time</td><td style="padding: 6px 0;">${payload.startTime} - ${payload.endTime}</td></tr>
-                    <tr><td style="padding: 6px 0; font-weight: 600;">Mode</td><td style="padding: 6px 0;">${payload.mode}</td></tr>
-                    ${payload.notes ? `<tr><td style="padding: 6px 0; font-weight: 600;">Notes</td><td style="padding: 6px 0;">${payload.notes}</td></tr>` : ''}
-                </tbody>
-            </table>
-            <p style="margin-top: 16px;">Recruiter: ${payload.recruiterName} (${payload.recruiterEmail})</p>
-            <p>Best regards,<br />${payload.recruiterName}</p>
-        </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f2f6fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2f6fb; padding: 28px 14px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 660px; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 12px; overflow: hidden;">
+                    <tr>
+                        <td style="background: linear-gradient(120deg, #0f4c5c 0%, #1f6f8b 100%); padding: 28px 30px; color: #ffffff;">
+                            <p style="margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.9;">Hirevia Interview Desk</p>
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.25;">Interview Confirmed</h1>
+                            <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; opacity: 0.95;">Your interview schedule is now finalized. Please find all details below.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 30px; color: #1f2937;">
+                            <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">Hi ${candidateNameSafe},</p>
+                            <p style="margin: 0 0 22px; font-size: 15px; line-height: 1.7; color: #4b5563;">
+                                Thank you for your interest. We are pleased to invite you for the next round. Please keep this email for your reference.
+                            </p>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e5edf6; border-radius: 10px; overflow: hidden; margin: 0 0 20px;">
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Interview Title</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${titleSafe}</td>
+                                </tr>
+                                ${payload.jobTitle ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Job Role</td><td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${jobTitleSafe}</td></tr>` : ''}
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Date</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${interviewDateSafe}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Time</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${startTimeSafe} - ${endTimeSafe}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
+                                </tr>
+                                ${payload.notes ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600;">Notes</td><td style="padding: 14px 16px; color: #111827; font-size: 14px;">${notesSafe}</td></tr>` : ''}
+                            </table>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fbff; border: 1px dashed #bfd2ea; border-radius: 10px; margin: 0 0 20px;">
+                                <tr>
+                                    <td style="padding: 14px 16px; color: #334155; font-size: 14px; line-height: 1.6;">
+                                        <strong style="color: #111827;">Recruiter Contact:</strong> ${recruiterNameSafe} (${recruiterEmailSafe})
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.7;">
+                                Please join on time and ensure your internet, audio and camera setup is ready before the interview starts.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 20px 30px 28px; background-color: #f9fbff; border-top: 1px solid #e5edf6;">
+                            <p style="margin: 0 0 4px; color: #111827; font-size: 14px; font-weight: 600;">Best regards,</p>
+                            <p style="margin: 0; color: #4b5563; font-size: 14px;">${recruiterNameSafe}</p>
+                            <p style="margin: 12px 0 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">This is an interview scheduling email from Hirevia.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
     `;
 
     await transporter.sendMail({
