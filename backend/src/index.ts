@@ -29,7 +29,7 @@ console.log('\n🚀 Starting Hirevia Backend...\n');
 // Middleware
 // app.use(cors());
 app.use(cors({
-  origin: "https://hirevia-4bioyprpv-pratibha-portfolio.vercel.app/",
+  origin: "https://hireviaweb.vercel.app/login",
   credentials: true
 }));
 
