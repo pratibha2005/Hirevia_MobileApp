@@ -29,7 +29,7 @@ console.log('\n🚀 Starting Hirevia Backend...\n');
 // Middleware
 // app.use(cors());
 app.use(cors({
-  origin: "https://hireviaweb.vercel.app/login",
+  origin: "https://hireviaweb.vercel.app",
   credentials: true
 }));
 
