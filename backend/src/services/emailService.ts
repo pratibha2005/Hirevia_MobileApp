@@ -11,6 +11,7 @@ type InterviewEmailPayload = {
     startTime: string;
     endTime: string;
     mode: string;
+    meetingLink?: string;
     notes?: string;
 };
 
@@ -69,7 +70,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
     const interviewDateReadable = toReadableDate(payload.interviewDate);
     const startTimeReadable = toReadableTime(payload.startTime);
     const endTimeReadable = toReadableTime(payload.endTime);
-    const subject = `Interview Scheduled: ${payload.title}`;
+    const candidateSubject = `Interview Scheduled: ${payload.title}`;
     const senderAddress = process.env.SMTP_FROM || process.env.SMTP_USER || payload.recruiterEmail;
     const senderName = payload.recruiterName || 'Recruiter';
 
@@ -77,6 +78,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
     const titleSafe = escapeHtml(payload.title);
     const jobTitleSafe = payload.jobTitle ? escapeHtml(payload.jobTitle) : '';
     const modeSafe = escapeHtml(payload.mode);
+    const meetingLinkSafe = payload.meetingLink ? escapeHtml(payload.meetingLink) : '';
     const notesSafe = payload.notes ? escapeHtml(payload.notes) : '';
     const recruiterNameSafe = escapeHtml(payload.recruiterName);
     const recruiterEmailSafe = escapeHtml(payload.recruiterEmail);
@@ -93,6 +95,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         `Date: ${interviewDateReadable}`,
         `Time: ${startTimeReadable} - ${endTimeReadable}`,
         `Mode: ${payload.mode}`,
+        payload.meetingLink ? `Meeting Link: ${payload.meetingLink}` : null,
         payload.notes ? `Notes: ${payload.notes}` : null,
         '',
         `Recruiter: ${payload.recruiterName}`,
@@ -146,9 +149,10 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
                                     <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${startTimeSafe} - ${endTimeSafe}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
-                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
                                 </tr>
+                                ${payload.meetingLink ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Google Meet Link</td><td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}"><a href="${meetingLinkSafe}" target="_blank" rel="noopener noreferrer" style="color: #0f4c5c; word-break: break-all;">${meetingLinkSafe}</a></td></tr>` : ''}
                                 ${payload.notes ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600;">Notes</td><td style="padding: 14px 16px; color: #111827; font-size: 14px;">${notesSafe}</td></tr>` : ''}
                             </table>
 
@@ -185,9 +189,102 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
         from: `${senderName} <${senderAddress}>`,
         to: payload.candidateEmail,
         replyTo: payload.recruiterEmail,
-        subject,
+        subject: candidateSubject,
         text,
         html
+    });
+
+    const recruiterSubject = `Interview Scheduled for ${payload.candidateName}: ${payload.title}`;
+    const recruiterText = [
+        `Hi ${payload.recruiterName},`,
+        '',
+        `Interview has been scheduled for candidate: ${payload.candidateName}.`,
+        `Candidate Email: ${payload.candidateEmail}`,
+        `Title: ${payload.title}`,
+        payload.jobTitle ? `Job: ${payload.jobTitle}` : null,
+        `Date: ${interviewDateReadable}`,
+        `Time: ${startTimeReadable} - ${endTimeReadable}`,
+        `Mode: ${payload.mode}`,
+        payload.meetingLink ? `Meeting Link: ${payload.meetingLink}` : null,
+        payload.notes ? `Notes: ${payload.notes}` : null,
+        '',
+        'This is a confirmation copy of the candidate interview schedule email.',
+        '',
+        'Regards,',
+        'Hirevia'
+    ]
+        .filter(Boolean)
+        .join('\n');
+
+    const recruiterHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f2f6fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2f6fb; padding: 28px 14px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 660px; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 12px; overflow: hidden;">
+                    <tr>
+                        <td style="background: linear-gradient(120deg, #0f4c5c 0%, #1f6f8b 100%); padding: 28px 30px; color: #ffffff;">
+                            <p style="margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.9;">Hirevia Interview Desk</p>
+                            <h1 style="margin: 0; font-size: 24px; font-weight: 700; line-height: 1.25;">Interview Scheduled Confirmation</h1>
+                            <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; opacity: 0.95;">This is to inform you that an interview has been successfully scheduled.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 30px; color: #1f2937;">
+                            <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">Hi ${recruiterNameSafe},</p>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e5edf6; border-radius: 10px; overflow: hidden; margin: 0 0 20px;">
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Candidate</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${candidateNameSafe} (${escapeHtml(payload.candidateEmail)})</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Interview Title</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${titleSafe}</td>
+                                </tr>
+                                ${payload.jobTitle ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Job Role</td><td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${jobTitleSafe}</td></tr>` : ''}
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Date</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${interviewDateSafe}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e5edf6;">Time</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; border-bottom: 1px solid #e5edf6;">${startTimeSafe} - ${endTimeSafe}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">Interview Mode</td>
+                                    <td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes || payload.meetingLink ? 'border-bottom: 1px solid #e5edf6;' : ''}">${modeSafe}</td>
+                                </tr>
+                                ${payload.meetingLink ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}">Google Meet Link</td><td style="padding: 14px 16px; color: #111827; font-size: 14px; ${payload.notes ? 'border-bottom: 1px solid #e5edf6;' : ''}"><a href="${meetingLinkSafe}" target="_blank" rel="noopener noreferrer" style="color: #0f4c5c; word-break: break-all;">${meetingLinkSafe}</a></td></tr>` : ''}
+                                ${payload.notes ? `<tr><td style="padding: 14px 16px; width: 36%; background-color: #f8fbff; color: #374151; font-size: 14px; font-weight: 600;">Notes</td><td style="padding: 14px 16px; color: #111827; font-size: 14px;">${notesSafe}</td></tr>` : ''}
+                            </table>
+
+                            <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.7;">**Candidate already notified with same Meet link.**
+</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+
+    await transporter.sendMail({
+        from: `${senderName} <${senderAddress}>`,
+        to: payload.recruiterEmail,
+        replyTo: payload.recruiterEmail,
+        subject: recruiterSubject,
+        text: recruiterText,
+        html: recruiterHtml
     });
 };
 

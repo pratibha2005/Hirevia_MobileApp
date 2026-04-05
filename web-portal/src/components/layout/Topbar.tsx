@@ -16,23 +16,55 @@ const pageLabels: Record<string, { title: string; subtitle: string }> = {
 };
 
 function TopbarUser() {
-  const [user, setUser] = useState<{ name: string } | null>(null);
+  const router = useRouter();
+  const [user, setUser] = useState<{ name: string; profileImage?: string } | null>(null);
+
   useEffect(() => {
     const stored = getStoredUser();
-    if (stored) setUser({ name: stored.name || 'HR User' });
+    if (stored) setUser({ name: stored.name || 'HR User', profileImage: stored.profileImage });
+
+    const syncUser = () => {
+      const nextUser = getStoredUser();
+      if (nextUser) {
+        setUser({ name: nextUser.name || 'HR User', profileImage: nextUser.profileImage });
+      }
+    };
+
+    window.addEventListener('storage', syncUser);
+    window.addEventListener('user-updated', syncUser as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', syncUser);
+      window.removeEventListener('user-updated', syncUser as EventListener);
+    };
   }, []);
+
   const initials = user?.name
     ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'H';
+
   return (
-    <div className="flex items-center gap-2 pl-4 border-l border-glass-border cursor-pointer group">
-      <div className="w-8 h-8 rounded-full bg-primary-gradient flex items-center justify-center text-white text-[12px] font-bold shadow-glow-sm">
-        {initials}
-      </div>
+    <button
+      type="button"
+      onClick={() => router.push('/profile')}
+      className="flex items-center gap-2 pl-4 border-l border-glass-border cursor-pointer group text-left rounded-lg"
+      aria-label="Open profile settings"
+    >
+      {user?.profileImage ? (
+        <img
+          src={user.profileImage}
+          alt={user.name || 'Profile'}
+          className="w-8 h-8 rounded-full object-cover border border-glass-border shadow-glow-sm"
+        />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-primary-gradient flex items-center justify-center text-white text-[12px] font-bold shadow-glow-sm">
+          {initials}
+        </div>
+      )}
       <div className="hidden sm:block">
         <p className="text-sm font-semibold text-on-surface leading-none">{user?.name || 'HR User'}</p>
       </div>
-    </div>
+    </button>
   );
 }
 

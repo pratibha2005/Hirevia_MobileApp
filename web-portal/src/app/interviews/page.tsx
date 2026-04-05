@@ -207,7 +207,7 @@ export default function InterviewScheduling() {
     let endTime = `${defaultEnd < 10 ? '0' : ''}${defaultEnd}:00`;
 
     try {
-      const resp = await apiFetch('/api/interviews', {
+      const data = await apiFetch('/api/interviews', {
         method: 'POST',
         body: JSON.stringify({
           title: interviewType,
@@ -220,12 +220,15 @@ export default function InterviewScheduling() {
           notes: interviewDescription
         })
       });
-      const data = await resp.json();
+
       if (data.success) {
+        const generatedMeetLink = data.interview?.meetingLink;
         addToast({
           type: 'success',
           title: 'Interview Scheduled Successfully! 🎉',
-          description: `Email sent to ${candidateEmail}`,
+          description: generatedMeetLink
+            ? `Email sent to ${candidateEmail} with Meet link`
+            : `Email sent to ${candidateEmail}`,
           duration: 5000,
         });
         setShowAddModal(false);

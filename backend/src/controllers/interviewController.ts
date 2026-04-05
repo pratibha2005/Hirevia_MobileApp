@@ -8,6 +8,8 @@ const isValidIsoDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date);
 const isValidTime = (time: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+const createGoogleMeetLink = () => 'https://meet.google.com/new';
+
 // GET /api/interviews
 export const listInterviews = async (req: Request, res: Response) => {
     try {
@@ -39,6 +41,7 @@ export const createInterview = async (req: Request, res: Response) => {
             startTime,
             endTime,
             mode,
+            meetingLink,
             notes
         } = req.body;
 
@@ -78,6 +81,11 @@ export const createInterview = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: 'Recruiter email is invalid. Update your profile email and try again.' });
         }
 
+        const selectedMode = mode || 'Google Meet';
+        const resolvedMeetingLink = selectedMode === 'Google Meet'
+            ? (typeof meetingLink === 'string' && meetingLink.trim() ? meetingLink.trim() : createGoogleMeetLink())
+            : '';
+
         const interview = await Interview.create({
             companyId: req.user!.companyId,
             createdById: req.user!.userId,
@@ -88,7 +96,8 @@ export const createInterview = async (req: Request, res: Response) => {
             interviewDate,
             startTime,
             endTime,
-            mode: mode || 'Google Meet',
+            mode: selectedMode,
+            meetingLink: resolvedMeetingLink,
             notes: notes || ''
         });
 
@@ -103,7 +112,8 @@ export const createInterview = async (req: Request, res: Response) => {
                 interviewDate,
                 startTime,
                 endTime,
-                mode: mode || 'Google Meet',
+                mode: selectedMode,
+                meetingLink: resolvedMeetingLink,
                 notes: notes || ''
             });
         } catch (mailError: any) {

@@ -13,6 +13,7 @@ export interface IInterview extends Document {
     startTime: string;
     endTime: string;
     mode: InterviewMode;
+    meetingLink?: string;
     notes?: string;
     createdAt: Date;
 }
@@ -28,6 +29,7 @@ const InterviewSchema: Schema = new Schema({
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
     mode: { type: String, enum: ['In-person', 'Google Meet', 'Zoom', 'Phone'], default: 'Google Meet' },
+    meetingLink: { type: String, default: '', trim: true },
     notes: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });

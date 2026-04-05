@@ -7,11 +7,11 @@ import { Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import { Pagination } from '@/components/ui/Pagination';
 import {
-  Search, Plus, MapPin, Users, Clock,
+  Search, Plus, MapPin,
   CheckCircle2, XCircle, RotateCcw,
-  RefreshCw, AlertCircle, Loader2, ChevronRight,
+  RefreshCw, AlertCircle, Loader2,
   Briefcase, ArrowUpRight, ArrowUpDown, ArrowUp, ArrowDown,
-  Bookmark, BookmarkPlus, X as XIcon, Check
+  Bookmark, BookmarkPlus, X as XIcon
 } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 
@@ -150,6 +150,13 @@ const Row = React.memo(function Row({
   isSelected?: boolean;
   onSelectChange?: (id: string, checked: boolean) => void;
 }) {
+  const zebraBackground =
+    index % 2 === 1
+      // ? 'color-mix(in srgb, var(--primary) 14%, var(--surface-base))'
+      // : 'var(--surface-base)';
+       ? 'color-mix(in srgb, #e4cbea 12%, var(--surface-base))'
+    : 'var(--surface-base)';
+
   return (
     <motion.tr
       initial={{ opacity: 0 }}
@@ -158,7 +165,10 @@ const Row = React.memo(function Row({
       className="group border-b hover:bg-surface-low transition-colors duration-150 cursor-default"
       style={{
         borderColor: 'var(--glass-border)',
-        backgroundColor: isSelected ? 'rgba(99,102,241,0.05)' : 'transparent'
+        backgroundColor: isSelected
+          // ? 'color-mix(in srgb, var(--primary) 22%, var(--surface-base))'
+          ? '#d0ebfb' 
+          : zebraBackground
       }}
     >
       {/* Checkbox */}
@@ -168,7 +178,8 @@ const Row = React.memo(function Row({
             type="checkbox"
             checked={isSelected}
             onChange={(e) => onSelectChange?.(job._id, e.target.checked)}
-            className="w-3.5 h-3.5 rounded border border-[#4B5563] bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+            className="w-3.5 h-3.5 rounded border bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+            style={{ borderColor: 'var(--outline-variant)' }}
           />
           {isSelected && (
             <svg
@@ -186,24 +197,24 @@ const Row = React.memo(function Row({
 
       {/* Title + meta */}
       <td className="py-4 pl-6 pr-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[13.5px] font-semibold text-on-surface group-hover:text-primary transition-colors leading-tight">
+        <div className="flex flex-col gap-2 min-w-0">
+          <span className="text-[14px] font-semibold text-on-surface group-hover:text-primary transition-colors leading-tight truncate">
             {job.title}
           </span>
-          <div className="flex items-center gap-2 text-[11px] text-on-surface-subtle">
-            <MapPin className="w-3 h-3 shrink-0" />
-            <span>{job.location}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-on-surface-variant">
+            <span className="inline-flex items-center gap-1 rounded-full border border-glass-border bg-surface-low px-2.5 py-1">
+              <MapPin className="w-3 h-3 shrink-0 text-on-surface-subtle" />
+              <span className="truncate max-w-[180px]">{job.location}</span>
+            </span>
             {job.type && (
-              <>
-                <span className="w-0.5 h-0.5 rounded-full bg-[#374151]" />
-                <span>{job.type}</span>
-              </>
+              <span className="inline-flex items-center rounded-full border border-glass-border bg-surface-low px-2.5 py-1 font-medium text-on-surface">
+                {job.type}
+              </span>
             )}
             {job.salary && (
-              <>
-                <span className="w-0.5 h-0.5 rounded-full bg-[#374151]" />
-                <span className="text-on-surface-variant">{job.salary}</span>
-              </>
+              <span className="inline-flex items-center rounded-full border border-glass-border bg-surface-low px-2.5 py-1 font-medium text-on-surface">
+                {job.salary}
+              </span>
             )}
           </div>
         </div>
@@ -211,14 +222,14 @@ const Row = React.memo(function Row({
 
       {/* Skills */}
       <td className="py-4 px-4 hidden lg:table-cell">
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap max-w-[240px]">
           {job.skills.slice(0, 3).map(s => (
-            <span key={s} className="text-[10px] px-2 py-0.5 rounded-md font-medium text-on-surface-subtle bg-surface-lowest border border-glass-border">
+            <span key={s} className="text-[10.5px] px-2 py-1 rounded-full font-medium text-on-surface-variant bg-surface-low border border-glass-border">
               {s}
             </span>
           ))}
           {job.skills.length > 3 && (
-            <span className="text-[10px] text-on-surface-subtle">+{job.skills.length - 3}</span>
+            <span className="text-[10.5px] px-2 py-1 rounded-full font-medium text-primary bg-primary/10 border border-primary/20">+{job.skills.length - 3}</span>
           )}
         </div>
       </td>
@@ -230,15 +241,17 @@ const Row = React.memo(function Row({
 
       {/* Applicants */}
       <td className="py-4 px-4 text-right hidden sm:table-cell">
-        <span className="text-[13px] font-semibold text-on-surface">{job.applicationCount}</span>
-        {job.maxApplications && (
-          <span className="text-[11px] text-on-surface-subtle"> / {job.maxApplications}</span>
-        )}
+        <div className="inline-flex items-baseline gap-1.5">
+          <span className="text-[14px] font-semibold text-on-surface">{job.applicationCount}</span>
+          {job.maxApplications ? (
+            <span className="text-[11px] text-on-surface-subtle">/ {job.maxApplications}</span>
+          ) : null}
+        </div>
       </td>
 
       {/* Posted */}
       <td className="py-4 px-4 text-right hidden md:table-cell">
-        <span className="text-[11px] text-on-surface-subtle">{timeAgo(job.createdAt)}</span>
+        <span className="text-[12px] text-on-surface-variant">{timeAgo(job.createdAt)}</span>
       </td>
 
       {/* Actions */}
@@ -251,7 +264,7 @@ const Row = React.memo(function Row({
           )}
           <Link
             href={`/candidates?job=${job._id}`}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors px-3 py-1.5 rounded-md shadow-sm"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-primary hover:bg-primary-hover transition-colors px-3 py-1.5 rounded-md shadow-sm"
           >
             Pipeline <ArrowUpRight className="w-3 h-3" />
           </Link>
@@ -266,12 +279,12 @@ const Row = React.memo(function Row({
 function SkeletonRow() {
   return (
     <tr className="border-b animate-pulse" style={{ borderColor: 'var(--glass-border)' }}>
-      <td className="py-4 pl-4 pr-2 w-10"><div className="w-3.5 h-3.5 rounded border border-white/10" /></td>
-      <td className="py-4 pl-4 pr-4"><div className="space-y-2"><div className="h-3.5 bg-white/6 rounded w-48" /><div className="h-2.5 bg-white/3 rounded w-32" /></div></td>
-      <td className="py-4 px-4 hidden lg:table-cell"><div className="flex gap-1.5"><div className="h-4 bg-white/4 rounded-md w-12" /><div className="h-4 bg-white/4 rounded-md w-16" /></div></td>
-      <td className="py-4 px-4"><div className="h-5 bg-white/5 rounded-full w-16" /></td>
-      <td className="py-4 px-4 hidden sm:table-cell"><div className="h-3.5 bg-white/4 rounded w-6 ml-auto" /></td>
-      <td className="py-4 px-4 hidden md:table-cell"><div className="h-2.5 bg-white/3 rounded w-10 ml-auto" /></td>
+      <td className="py-4 pl-4 pr-2 w-10"><div className="w-3.5 h-3.5 rounded border" style={{ borderColor: 'var(--outline-variant)' }} /></td>
+      <td className="py-4 pl-4 pr-4"><div className="space-y-2"><div className="h-3.5 rounded w-48 bg-surface-high" /><div className="h-2.5 rounded w-32 bg-surface-mid" /></div></td>
+      <td className="py-4 px-4 hidden lg:table-cell"><div className="flex gap-1.5"><div className="h-4 rounded-md w-12 bg-surface-mid" /><div className="h-4 rounded-md w-16 bg-surface-mid" /></div></td>
+      <td className="py-4 px-4"><div className="h-5 rounded-full w-16 bg-surface-high" /></td>
+      <td className="py-4 px-4 hidden sm:table-cell"><div className="h-3.5 rounded w-6 ml-auto bg-surface-mid" /></td>
+      <td className="py-4 px-4 hidden md:table-cell"><div className="h-2.5 rounded w-10 ml-auto bg-surface-mid" /></td>
       <td className="py-4 pl-4 pr-5" />
     </tr>
   );
@@ -309,10 +322,10 @@ export default function JobListings() {
 
   // Column Resizing
   const [colWidths, setColWidths] = useState({
-    title: 250,
-    skills: 200,
-    status: 120,
-    applicationCount: 120,
+    title: 360,
+    skills: 220,
+    status: 150,
+    applicationCount: 140,
     createdAt: 120
   });
 
@@ -456,9 +469,9 @@ export default function JobListings() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-[17px] font-semibold text-on-surface tracking-tight">Jobs</h2>
+          <h2 className="text-[18px] font-semibold text-on-surface tracking-tight">Jobs</h2>
           {!loading && (
-            <p className="text-[12px] text-on-surface-subtle mt-0.5">
+            <p className="text-[12px] text-on-surface-variant mt-0.5">
               {jobs.length} positions
               {active > 0 && <> · <span className="text-success">{active} active</span></>}
               {totalApplicants > 0 && <> · {totalApplicants} applicants</>}
@@ -469,8 +482,8 @@ export default function JobListings() {
         {/* Post Job — no outline version */}
         <Link href="/jobs/new">
           <button
-            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-[12.5px] font-medium text-white transition-all hover:brightness-110 active:scale-[0.97]"
-            style={{ background: 'linear-gradient(135deg,#4F46E5,#6D28D9)', boxShadow: '0 2px 8px rgba(79,70,229,0.3)' }}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg text-[12.5px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
+            style={{ background: 'linear-gradient(135deg,var(--primary),var(--primary-gradient-end))', boxShadow: '0 8px 20px var(--primary-glow)' }}
           >
             <Plus className="w-3.5 h-3.5" />
             New Position
@@ -479,7 +492,7 @@ export default function JobListings() {
       </div>
 
       {/* ── Toolbar ── */}
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-center gap-2.5 flex-wrap rounded-xl border border-glass-border bg-surface-base/70 backdrop-blur-md px-3 py-2">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-subtle" />
@@ -488,7 +501,7 @@ export default function JobListings() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search…"
-            className="h-8 pl-8 pr-3 rounded-lg text-[12.5px] text-on-surface-variant placeholder:text-on-surface-subtle focus:outline-none focus:text-white transition-all w-48 focus:w-64 bg-surface-lowest border border-glass-border transition-all duration-200"
+            className="h-9 pl-8 pr-3 rounded-lg text-[12.5px] text-on-surface placeholder:text-on-surface-subtle focus:outline-none transition-all w-48 focus:w-64 bg-surface-lowest border border-glass-border duration-200"
             onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.35)'; }}
             onBlur={e => { e.target.style.borderColor = 'var(--glass-border)'; }}
           />
@@ -503,7 +516,7 @@ export default function JobListings() {
               className="px-3 py-1 rounded-md text-[11.5px] font-medium transition-all duration-150"
               style={{
                 background: filter === s ? 'rgba(99,102,241,0.25)' : 'transparent',
-                color: filter === s ? '#818CF8' : '#6B7280',
+                color: filter === s ? 'var(--primary)' : 'var(--on-surface-variant)',
               }}
             >
               {s}
@@ -530,7 +543,7 @@ export default function JobListings() {
                 transition={{ duration: 0.15 }}
                 className="absolute top-full mt-2 left-0 w-56 bg-surface-base/95 backdrop-blur-md backdrop-blur-xl border border-glass-border rounded-xl shadow-modal overflow-hidden z-50 flex flex-col"
               >
-                <div className="flex items-center justify-between px-3 py-2 border-b border-glass-border bg-white/5">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-glass-border bg-surface-low">
                   <span className="text-[11px] font-semibold text-on-surface-subtle uppercase tracking-wider">Saved Views</span>
                 </div>
                 <div className="max-h-48 overflow-y-auto w-full p-1.5 flex flex-col gap-0.5">
@@ -567,7 +580,7 @@ export default function JobListings() {
                         value={viewNameInput}
                         onChange={(e) => setViewNameInput(e.target.value)}
                         placeholder="Name this view..."
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-2.5 py-1.5 text-[11.5px] text-white focus:outline-none focus:border-primary/50"
+                        className="w-full bg-surface-lowest border border-glass-border rounded-md px-2.5 py-1.5 text-[11.5px] text-on-surface placeholder:text-on-surface-subtle focus:outline-none focus:border-primary/50"
                         autoFocus
                       />
                       <div className="flex gap-1.5">
@@ -579,7 +592,7 @@ export default function JobListings() {
                         </button>
                         <button 
                           onClick={() => setIsSavingView(false)}
-                          className="flex-1 bg-white/5 hover:bg-surface-low text-on-surface-variant rounded-md py-1 text-[11px] font-medium transition-colors"
+                          className="flex-1 bg-surface-low hover:bg-surface-mid text-on-surface-variant rounded-md py-1 text-[11px] font-medium transition-colors"
                         >
                           Cancel
                         </button>
@@ -603,7 +616,7 @@ export default function JobListings() {
         <button
           onClick={fetchJobs}
           title="Refresh"
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-on-surface-subtle hover:text-on-surface-variant transition-colors bg-surface-lowest border border-glass-border"
+          className="h-9 w-9 rounded-lg flex items-center justify-center text-on-surface-subtle hover:text-on-surface transition-colors bg-surface-lowest border border-glass-border"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -619,7 +632,7 @@ export default function JobListings() {
       )}
 
       {/* ── Table ── */}
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
+      <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: '1px solid var(--glass-border)', background: 'color-mix(in srgb, var(--surface-base) 94%, transparent)' }}>
         {/* Bulk Actions Header (Replaces normal headers when items selected) */}
         {selectedJobIds.size > 0 && (
           <div className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 py-3 px-4 backdrop-blur-md bg-surface-base/95 backdrop-blur-md" style={{ borderBottom: '1px solid var(--glass-border)' }}>
@@ -628,7 +641,8 @@ export default function JobListings() {
                 type="checkbox"
                 checked={isAllSelected || isSomeSelected}
                 onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border border-[#4B5563] bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+                className="w-3.5 h-3.5 rounded border bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+                style={{ borderColor: 'var(--outline-variant)' }}
               />
               {isAllSelected && (
                 <svg
@@ -653,11 +667,12 @@ export default function JobListings() {
                 </svg>
               )}
             </label>
-            <span className="text-[12px] font-medium text-white ml-2">{selectedJobIds.size} selected</span>
+            <span className="text-[12px] font-medium text-on-surface ml-2">{selectedJobIds.size} selected</span>
             <div className="flex items-center gap-2 ml-auto">
               {/* Add bulk actions here */}
               <button 
-                className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors text-danger hover:bg-[#F87171]/10 border border-[#F87171]/20"
+                className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors text-danger hover:bg-danger/10 border"
+                style={{ borderColor: 'color-mix(in srgb, var(--danger) 32%, transparent)' }}
                 onClick={() => {
                   // TODO: Implement bulk delete
                   setSelectedJobIds(new Set());
@@ -671,7 +686,7 @@ export default function JobListings() {
 
         {/* Column headers */}
         <table className="w-full border-collapse relative">
-          <thead className="sticky top-0 z-10 backdrop-blur-md bg-surface-base/90">
+          <thead className="sticky top-0 z-10 backdrop-blur-md bg-surface-base/95">
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <th className="py-3 pl-4 pr-2 text-left w-10">
                 <label className="flex items-center cursor-pointer relative z-10 w-3.5 h-3.5">
@@ -679,7 +694,8 @@ export default function JobListings() {
                     type="checkbox"
                     checked={isAllSelected || isSomeSelected}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border border-[#4B5563] bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+                    className="w-3.5 h-3.5 rounded border bg-transparent checked:bg-primary checked:border-primary appearance-none transition-colors"
+                    style={{ borderColor: 'var(--outline-variant)' }}
                   />
                   {isAllSelected && (
                     <svg
@@ -707,16 +723,16 @@ export default function JobListings() {
               </th>
               <Resizable width={colWidths.title} height={0} onResize={onResize('title')}>
                 <th 
-                  className="text-left py-3 pr-4 text-[10.5px] font-semibold uppercase tracking-widest text-on-surface-subtle cursor-pointer hover:bg-surface-low transition-colors group relative"
+                  className="text-left py-3 pr-4 text-[12px] font-semibold text-on-surface-variant cursor-pointer hover:bg-surface-low transition-colors group relative"
                   style={{ width: colWidths.title }}
                   onClick={() => handleSort('title')}
                 >
-                  <div className="flex items-center justify-start gap-1">Role {getSortIcon('title')}</div>
+                  <div className="flex items-center justify-start gap-1.5">Role {getSortIcon('title')}</div>
                 </th>
               </Resizable>
               <Resizable width={colWidths.skills} height={0} onResize={onResize('skills')}>
                 <th 
-                  className="text-left py-3 px-4 text-[10.5px] font-semibold uppercase tracking-widest text-on-surface-subtle hidden lg:table-cell relative"
+                  className="text-left py-3 px-4 text-[12px] font-semibold text-on-surface-variant hidden lg:table-cell relative"
                   style={{ width: colWidths.skills }}
                 >
                   Skills
@@ -724,36 +740,36 @@ export default function JobListings() {
               </Resizable>
               <Resizable width={colWidths.status} height={0} onResize={onResize('status')}>
                 <th 
-                  className="text-left py-3 px-4 text-[10.5px] font-semibold uppercase tracking-widest text-on-surface-subtle cursor-pointer hover:bg-surface-low transition-colors group relative"
+                  className="text-left py-3 px-4 text-[12px] font-semibold text-on-surface-variant cursor-pointer hover:bg-surface-low transition-colors group relative"
                   style={{ width: colWidths.status }}
                   onClick={() => handleSort('status')}
                 >
-                  <div className="flex items-center justify-start gap-1">Status {getSortIcon('status')}</div>
+                  <div className="flex items-center justify-start gap-1.5">Status {getSortIcon('status')}</div>
                 </th>
               </Resizable>
               <Resizable width={colWidths.applicationCount} height={0} onResize={onResize('applicationCount')}>
                 <th 
-                  className="text-right py-3 px-4 text-[10.5px] font-semibold uppercase tracking-widest text-on-surface-subtle hidden sm:table-cell cursor-pointer hover:bg-surface-low transition-colors group relative"
+                  className="text-right py-3 px-4 text-[12px] font-semibold text-on-surface-variant hidden sm:table-cell cursor-pointer hover:bg-surface-low transition-colors group relative"
                   style={{ width: colWidths.applicationCount }}
                   onClick={() => handleSort('applicationCount')}
                 >
-                  <div className="flex items-center justify-end gap-1">{getSortIcon('applicationCount')} Applicants</div>
+                  <div className="flex items-center justify-end gap-1.5">{getSortIcon('applicationCount')} Applicants</div>
                 </th>
               </Resizable>
               <Resizable width={colWidths.createdAt} height={0} onResize={onResize('createdAt')}>
                 <th 
-                  className="text-right py-3 px-4 text-[10.5px] font-semibold uppercase tracking-widest text-on-surface-subtle hidden md:table-cell cursor-pointer hover:bg-surface-low transition-colors group relative"
+                  className="text-right py-3 px-4 text-[12px] font-semibold text-on-surface-variant hidden md:table-cell cursor-pointer hover:bg-surface-low transition-colors group relative"
                   style={{ width: colWidths.createdAt }}
                   onClick={() => handleSort('createdAt')}
                 >
-                  <div className="flex items-center justify-end gap-1">{getSortIcon('createdAt')} Posted</div>
+                  <div className="flex items-center justify-end gap-1.5">{getSortIcon('createdAt')} Posted</div>
                 </th>
               </Resizable>
               <th className="py-3 pl-4 pr-5 w-24" />
             </tr>
           </thead>
 
-          <tbody className="bg-surface-base/60 backdrop-blur-md">
+          <tbody className="bg-surface-base/70 backdrop-blur-md">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
             ) : paginatedJobs.length === 0 ? (
