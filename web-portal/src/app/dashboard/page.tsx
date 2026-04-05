@@ -158,7 +158,7 @@ export default function DashboardPage() {
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
                             <Input placeholder="Search candidate or role" className="pl-9 bg-[var(--surface)]" />
                         </div>
-                        <Button variant="outline" className="gap-2">
+                        <Button variant="secondary" className="gap-2">
                             <Filter size={16} /> Filter
                         </Button>
                         <Link href="/dashboard/jobs/create">
