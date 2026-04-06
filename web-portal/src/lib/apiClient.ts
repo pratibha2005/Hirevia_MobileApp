@@ -31,6 +31,13 @@ export async function apiFetch<T = any>(
   const data = await res.json();
 
   if (!res.ok) {
+    // Global 401 Unauthorized Interceptor: Force logout and redirect
+    if (res.status === 401) {
+      clearAuthSession();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
     throw new Error(data.message || `Request failed: ${res.status}`);
   }
 

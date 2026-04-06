@@ -1,18 +1,29 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ToastProvider } from '@/lib/toast-context';
 import { Toaster } from '@/components/ui/Toaster';
 import { Breadcrumbs } from '@/components/ui/Breadcrumb';
 import { KeyboardShortcutsModal } from '@/components/ui/KeyboardShortcutsModal';
+import { isAuthenticated } from '@/lib/apiClient';
 
 const AUTH_ROUTES = ['/login', '/signup'];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
     const isAuthPage = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+
+    // Global Route Guard: Prevent unauthorized access to dashboard pages
+    useEffect(() => {
+        if (!isAuthPage && !isAuthenticated()) {
+            // Redirect to login if trying to access protected route while unauthenticated
+            router.push('/login');
+        }
+    }, [isAuthPage, pathname, router]);
 
     if (isAuthPage) {
         // Auth pages: clean full-screen layout, no sidebar/topbar
@@ -24,6 +35,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         );
     }
 
+    // While redirecting, we could return null or a loader to prevent a "Flash of Content"
+    // However, since we're in a client component, the useEffect will trigger almost instantly.
+    
     return (
         <ToastProvider>
             {/* Global ambient background elements */}
