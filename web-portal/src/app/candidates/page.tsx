@@ -413,6 +413,7 @@ export default function CandidatesPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     fetchCandidates();
