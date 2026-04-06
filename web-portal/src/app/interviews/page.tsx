@@ -370,7 +370,13 @@ export default function InterviewScheduling() {
             <p className="text-[10px] font-semibold uppercase tracking-widest text-on-surface-subtle mb-2">Today's Lineup</p>
             {interviews.map(inv => (
               <div key={inv.id} className="flex items-center gap-2.5 bg-surface-low border border-glass-border rounded-xl p-3 hover:bg-surface-high transition-colors cursor-pointer group">
-                <img src={inv.candidateAvatar} alt={inv.candidateName} className="w-8 h-8 rounded-full object-cover border border-glass-border shrink-0" />
+                {inv.candidateAvatar ? (
+                  <img src={inv.candidateAvatar} alt={inv.candidateName} className="w-8 h-8 rounded-full object-cover border border-glass-border shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary-gradient-start shrink-0">
+                    {inv.candidateName[0]}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-on-surface truncate group-hover:text-primary-gradient-start transition-colors">{inv.candidateName}</p>
                   <p className="text-[10px] text-on-surface-variant">{inv.timeSlotId} · {inv.type}</p>
