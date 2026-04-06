@@ -87,14 +87,11 @@ export const registerApplicant = async (req: Request, res: Response) => {
             console.log('✅ Applicant profile updated');
         }
 
-        // Send OTP email
-        try {
-            await sendOtpEmail(email, otp);
-            console.log('✉️ OTP email sent to:', email);
-        } catch (emailErr) {
-            console.error('❌ Failed to send OTP email:', emailErr);
-            // Non-blocking error, but we should probably alert the client
-        }
+        // Send OTP email (non-blocking)
+        sendOtpEmail(email, otp).catch(emailErr => {
+            console.error('❌ Background OTP email failure:', emailErr);
+        });
+        console.log('✉️ OTP email broadcasted to:', email);
 
         console.log('✅ Initial registration successful for:', email);
         return res.status(200).json({

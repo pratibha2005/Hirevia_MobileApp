@@ -27,12 +27,12 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 console.log('\n🚀 Starting Hirevia Backend...\n');
 
 // Middleware
-// app.use(cors());
 app.use(cors({
-  origin: "https://hireviaweb.vercel.app",
-  credentials: true
+    origin: ['http://localhost:3000', 'https://hireviaweb.vercel.app'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -49,12 +49,6 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
-
-// Explicit interview route bindings (fallback for runtime router resolution issues)
-app.get('/api/interviews', requireAuth, requireRole(['HR']), listInterviews);
-app.post('/api/interviews', requireAuth, requireRole(['HR']), createInterview);
-app.get('/api/interviews/availability', requireAuth, requireRole(['HR']), getAvailability);
-app.put('/api/interviews/availability', requireAuth, requireRole(['HR']), updateAvailability);
 
 // Health check
 app.get('/health', (_req, res) => {
