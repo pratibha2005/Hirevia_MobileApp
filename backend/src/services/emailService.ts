@@ -1,4 +1,5 @@
-import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
 type InterviewEmailPayload = {
     recruiterName: string;
@@ -23,25 +24,20 @@ export type ApplicationStatusEmailPayload = {
     status: 'Shortlisted' | 'Rejected';
 };
 
-const getTransporter = () => {
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-    const smtpPort = Number(process.env.SMTP_PORT || 587);
-
-    if (!smtpHost || !smtpUser || !smtpPass) {
-        throw new Error('SMTP is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in backend/.env');
-    }
-
-    return nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: process.env.SMTP_SECURE === 'true' || smtpPort === 465,
-        auth: {
-            user: smtpUser,
-            pass: smtpPass
-        }
+const sendViaGas = async (to: string, subject: string, html: string, senderName: string, replyTo?: string) => {
+    const url = process.env.GOOGLE_SCRIPT_EMAIL_URL || 'https://script.google.com/macros/s/AKfycbwkPTWBLhFYIhULiwUZMQW0ccW_k0-xydIn6-YeWb5Y0r5iQ_W6fK2XXcDdXXqG4KML1g/exec';
+    if (!url) throw new Error('GOOGLE_SCRIPT_EMAIL_URL is missing!');
+    
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html, senderName, replyTo })
     });
+    
+    if (!res.ok) throw new Error('Failed to send email via Google Apps Script: ' + res.statusText);
+    const data = await res.json();
+    if (!data.success) throw new Error('GAS Error: ' + data.error);
+    return data;
 };
 
 const toReadableDate = (isoDate: string) => {
@@ -65,7 +61,7 @@ const escapeHtml = (value: string) => value
     .replace(/'/g, '&#39;');
 
 export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload) => {
-    const transporter = getTransporter();
+    
 
     const interviewDateReadable = toReadableDate(payload.interviewDate);
     const startTimeReadable = toReadableTime(payload.startTime);
@@ -185,14 +181,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
 </html>
     `;
 
-    await transporter.sendMail({
-        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
-        to: payload.candidateEmail,
-        replyTo: payload.recruiterEmail,
-        subject: candidateSubject,
-        text,
-        html
-    });
+    await sendViaGas(payload.candidateEmail, candidateSubject, html, senderName, payload.recruiterEmail);
 
     const recruiterSubject = `Interview Scheduled for ${payload.candidateName}: ${payload.title}`;
     const recruiterText = [
@@ -278,18 +267,11 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
 </html>
     `;
 
-    await transporter.sendMail({
-        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
-        to: payload.recruiterEmail,
-        replyTo: payload.recruiterEmail,
-        subject: recruiterSubject,
-        text: recruiterText,
-        html: recruiterHtml
-    });
+    await sendViaGas(payload.recruiterEmail, recruiterSubject, recruiterHtml, senderName, payload.recruiterEmail);
 };
 
 export const sendApplicationStatusEmail = async (payload: ApplicationStatusEmailPayload) => {
-    const transporter = getTransporter();
+    
 
     const subject = payload.status === 'Shortlisted'
         ? `Application Shortlisted - ${payload.jobTitle}`
@@ -476,17 +458,11 @@ export const sendApplicationStatusEmail = async (payload: ApplicationStatusEmail
 </html>
     `;
 
-    await transporter.sendMail({
-        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
-        to: payload.candidateEmail,
-        subject,
-        text,
-        html
-    });
+    await sendViaGas(payload.candidateEmail, subject, html, senderName);
 };
 
 export const sendOtpEmail = async (email: string, otp: string) => {
-    const transporter = getTransporter();
+    
 
     const subject = 'Hirevia - Your Verification Code';
     const senderAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@hirevia.com';
@@ -563,11 +539,5 @@ export const sendOtpEmail = async (email: string, otp: string) => {
 </html>
     `;
 
-    await transporter.sendMail({
-        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
-        to: email,
-        subject,
-        text,
-        html
-    });
+    await sendViaGas(email, subject, html, senderName);
 };
