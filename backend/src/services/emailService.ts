@@ -186,7 +186,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
     `;
 
     await transporter.sendMail({
-        from: `${senderName} <${senderAddress}>`,
+        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
         to: payload.candidateEmail,
         replyTo: payload.recruiterEmail,
         subject: candidateSubject,
@@ -279,7 +279,7 @@ export const sendInterviewScheduledEmail = async (payload: InterviewEmailPayload
     `;
 
     await transporter.sendMail({
-        from: `${senderName} <${senderAddress}>`,
+        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
         to: payload.recruiterEmail,
         replyTo: payload.recruiterEmail,
         subject: recruiterSubject,
@@ -477,7 +477,7 @@ export const sendApplicationStatusEmail = async (payload: ApplicationStatusEmail
     `;
 
     await transporter.sendMail({
-        from: `${senderName} <${senderAddress}>`,
+        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
         to: payload.candidateEmail,
         subject,
         text,
@@ -564,7 +564,7 @@ export const sendOtpEmail = async (email: string, otp: string) => {
     `;
 
     await transporter.sendMail({
-        from: `${senderName} <${senderAddress}>`,
+        from: senderAddress.includes('<') ? senderAddress : `"${senderName}" <${senderAddress}>`,
         to: email,
         subject,
         text,
