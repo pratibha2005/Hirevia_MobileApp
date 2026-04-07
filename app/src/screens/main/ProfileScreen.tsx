@@ -1,235 +1,361 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Animated, Easing, RefreshControl, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-// ─── Design System ────────────────────────────────────────────────────────────
-const THEME = {
-  primary:        '#4F46E5',
-  primaryLight:   '#EEF2FF',
-  primaryDark:    '#4338CA',
-  secondary:      '#06B6D4',
-  background:     '#F8FAFC',
-  surface:        '#FFFFFF',
-  surfaceLow:     '#F1F5F9',
-  text:           '#111827',
-  textMuted:      '#6B7280',
-  textSubtle:     '#9CA3AF',
-  border:         '#E5E7EB',
-  danger:         '#EF4444',
-  dangerLight:    '#FEF2F2',
-  success:        '#22C55E',
-  successLight:   '#F0FDF4',
+// ─── Monochrome Dossier Tokens (Final Polish Edition) ────────────────────────
+const C = {
+  background: '#F7F9FB', // Whisper-Quiet Grey-White Base
+  surface: '#FFFFFF',    // Pure Architectural Surface
+  surfaceLow: '#F0F4F7', // Ghost Material / Chips
+  onSurface: '#1A1C1E',  // Deep Charcoal
+  onSurfaceVar: '#7A8A99', // Metadata / Labels
+  primary: '#4E5A9A',    // Signature Slate-Indigo (High-End Accent)
+  outline: 'rgba(42, 52, 57, 0.04)', // Almost Invisible Hairline
+  danger: '#EF4444',
+  timelineLine: '#DBE2E8', // Slightly darker for high-res visibility
 };
 
-// ─── Setting Item ─────────────────────────────────────────────────────────────
-function SettingItem({
-  icon, title, value, isDestructive = false, rightElement
-}: {
-  icon: any; title: string; value?: string; isDestructive?: boolean; rightElement?: React.ReactNode;
-}) {
+// ─── Fade-In Wrapper ────────────────────────────────────────────────────────────
+function FadeIn({ children, delay = 0, style }: any) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(10)).current;
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 400, useNativeDriver: true, easing: Easing.out(Easing.quad) }),
+      ]),
+    ]).start();
+  }, []);
+  return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
+}
+
+// ─── Timeline Entry (Final Structural Perfection) ───────────────────────────
+function TimelineEntry({ title, company, date, isPresent, isFirst, isLast }: { title: string; company: string; date: string; isPresent?: boolean; isFirst?: boolean; isLast?: boolean }) {
   return (
-    <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
-      <View style={[styles.settingIcon, isDestructive && { backgroundColor: THEME.dangerLight }]}>
-        <Ionicons name={icon} size={18} color={isDestructive ? THEME.danger : THEME.primary} />
+    <View style={styles.timelineRow}>
+      <View style={styles.timelineIndicators}>
+        {!isFirst && <View style={[styles.timelineLine, { height: 24, top: 0 }]} />}
+        {!isLast && <View style={[styles.timelineLine, { top: 24, bottom: 0 }]} />}
+        <View style={styles.timelineNode}>
+           <View style={styles.timelineInnerNode} />
+        </View>
       </View>
-      <View style={styles.settingContent}>
-        <Text style={[styles.settingTitle, isDestructive && { color: THEME.danger }]}>{title}</Text>
-        {value && <Text style={styles.settingValue} numberOfLines={1}>{value}</Text>}
+      <View style={styles.timelineContent}>
+        <View style={styles.timelineHeader}>
+           <Text style={styles.timelineTitle}>{title}</Text>
+           <Text style={styles.timelineStatusPin}>{isPresent ? 'PRESENT' : '2023'}</Text>
+        </View>
+        <Text style={styles.timelineSub}>{company}</Text>
+        <Text style={styles.timelineDate}>{date.toUpperCase()}</Text>
       </View>
-      {rightElement || (
-        <Ionicons name="chevron-forward" size={16} color={isDestructive ? THEME.danger + '80' : THEME.textSubtle} />
-      )}
-    </TouchableOpacity>
+    </View>
   );
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
-  const [stats] = useState({ applied: 8, interviews: 3, offers: 1 });
+  const [user, setUser] = useState<{ name?: string; email?: string; profilePic?: string } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem('user').then(u => {
-      if (u) setUser(JSON.parse(u));
-    });
-  }, []);
-
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out', style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.multiRemove(['token', 'user']);
-          navigation.replace('Login');
-        },
-      },
-    ]);
+  const fetchUser = async () => {
+    const u = await AsyncStorage.getItem('user');
+    if (u) setUser(JSON.parse(u));
   };
 
-  const name = user?.name || 'Alex Johnson';
-  const email = user?.email || 'alex@example.com';
-  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  useFocusEffect(useCallback(() => { fetchUser(); }, []));
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchUser();
+    setRefreshing(false);
+  };
+
+  // 📊 Dynamic Mastery Calculation
+  const mastery = useMemo(() => {
+    let score = 0;
+    if (user?.name) score += 20;
+    if (user?.email) score += 20;
+    if (user?.profilePic) score += 10;
+    score += 45; // Base Profile completeness
+    return Math.min(score, 100);
+  }, [user]);
+
+  const name = user?.name || 'Alexander Vance';
+  const role = 'Frontend Developer';
+  const location = 'London, UK';
+  const displayFilename = `${name.replace(/\s+/g, '_')}_CV.pdf`;
+
+  const avatarSource = user?.profilePic 
+    ? { uri: user.profilePic } 
+    : require('../../../assets/images/profile_bitmoji.png');
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+    <View style={styles.root}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity style={styles.settingsIconBtn}>
-            <Ionicons name="settings-outline" size={20} color={THEME.textMuted} />
-          </TouchableOpacity>
+        {/* Discrete Exit Control */}
+        <View style={styles.topControl}>
+           <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="chevron-back" size={24} color={C.onSurface} strokeWidth={2.5} />
+           </TouchableOpacity>
         </View>
 
-        {/* Profile card */}
-        <View style={styles.profileCard}>
-          {/* Avatar */}
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatarRing}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{initials}</Text>
-              </View>
-            </View>
-            <TouchableOpacity style={styles.editAvatarBtn}>
-              <Ionicons name="camera" size={12} color={THEME.primary} />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.profileName}>{name}</Text>
-          <Text style={styles.profileEmail}>{email}</Text>
-
-          <TouchableOpacity style={styles.editProfileBtn}>
-            <Ionicons name="pencil" size={14} color={THEME.primary} style={{ marginRight: 6 }} />
-            <Text style={styles.editProfileText}>Edit Profile</Text>
-          </TouchableOpacity>
-
-          {/* Stats row */}
-          <View style={styles.statsRow}>
-            {[
-              { label: 'Applied', value: stats.applied, icon: 'document-text-outline' },
-              { label: 'Interviews', value: stats.interviews, icon: 'videocam-outline' },
-              { label: 'Offers', value: stats.offers, icon: 'trophy-outline' },
-            ].map((s, i) => (
-              <View key={i} style={[styles.statItem, i < 2 && styles.statItemBorder]}>
-                <Text style={styles.statValue}>{s.value}</Text>
-                <Text style={styles.statLabel}>{s.label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Resume section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Resume & Portfolio</Text>
-          <View style={styles.settingsCard}>
-            <SettingItem
-              icon="document-text"
-              title="My Resume"
-              value="Alex_Johnson_Resume.pdf · Updated 3 days ago"
-              rightElement={
-                <View style={styles.uploadBtn}>
-                  <Ionicons name="cloud-upload-outline" size={14} color={THEME.primary} />
-                  <Text style={styles.uploadText}>Update</Text>
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.onSurface} />}
+        >
+          
+          {/* 🧔 identity Section */}
+          <FadeIn delay={0}>
+             <View style={styles.heroSection}>
+                <View style={styles.haloContainer}>
+                   <LinearGradient 
+                      colors={['#CBD5E1', '#94A3B8']} // Graphite Monochrome Halo
+                      style={styles.haloRing}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                   />
+                   <View style={styles.avatarWrapper}>
+                      <Image 
+                        source={avatarSource} 
+                        style={styles.avatarImg}
+                      />
+                   </View>
                 </View>
-              }
-            />
-            <View style={styles.divider} />
-            <SettingItem icon="globe-outline" title="Portfolio Website" value="alexjohnson.dev" />
-            <View style={styles.divider} />
-            <SettingItem icon="logo-linkedin" title="LinkedIn Profile" value="linkedin.com/in/alexjohnson" />
-          </View>
-        </View>
+                <Text style={styles.heroName}>{name}</Text>
+                <Text style={styles.heroMeta}>{role} · {location}</Text>
+             </View>
+          </FadeIn>
 
-        {/* Preferences */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Job Preferences</Text>
-          <View style={styles.settingsCard}>
-            <SettingItem icon="briefcase-outline" title="Desired Role" value="Product Designer · Frontend Engineer" />
-            <View style={styles.divider} />
-            <SettingItem icon="cash-outline" title="Expected Salary" value="$80K – $120K" />
-            <View style={styles.divider} />
-            <SettingItem icon="location-outline" title="Preferred Location" value="Remote · NYC · SF" />
-          </View>
-        </View>
+          {/* 📏 Linear Mastery Card (Straight Editorial Update) */}
+          <FadeIn delay={80}>
+             <View style={styles.masteryCard}>
+                <View style={styles.masteryHeader}>
+                   <Text style={styles.masteryLabel}>PROFILE MASTERY</Text>
+                   <Text style={styles.masteryPercentLabel}>{mastery}%</Text>
+                </View>
+                
+                {/* Precision Horizontal Bar */}
+                <View style={styles.masteryTrack}>
+                   <View style={[styles.masteryFill, { width: `${mastery}%` }]} />
+                </View>
 
-        {/* Account */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.settingsCard}>
-            <SettingItem icon="notifications-outline" title="Notifications & Alerts" />
-            <View style={styles.divider} />
-            <SettingItem icon="lock-closed-outline" title="Privacy & Security" />
-            <View style={styles.divider} />
-            <SettingItem icon="help-circle-outline" title="Help & Support" />
-            <View style={styles.divider} />
-            <SettingItem icon="star-outline" title="Rate HireVia" />
-          </View>
-        </View>
+                <View style={styles.masteryBody}>
+                   <Text style={styles.masteryDescription}>Your professional narrative is nearly complete.</Text>
+                   <TouchableOpacity style={styles.boostLink}>
+                      <Text style={styles.boostLinkText}>BOOST STRENGTH</Text>
+                      <Ionicons name="arrow-forward" size={12} color={C.primary} />
+                   </TouchableOpacity>
+                </View>
+             </View>
+          </FadeIn>
 
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
-          <Ionicons name="log-out-outline" size={18} color={THEME.danger} />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+          {/* 📖 The Narrative Timeline */}
+          <FadeIn delay={160} style={styles.section}>
+             <Text style={styles.editorialLabel}>NARRATIVE</Text>
+             <View style={styles.timelineBlock}>
+                <TimelineEntry 
+                  isFirst
+                  isPresent
+                  title="Frontend Intern"
+                  company="TechSolutions"
+                  date="Jan 2024 — Now"
+                />
+                <TimelineEntry 
+                  isLast
+                  title="B.Tech in Computer Science"
+                  company="Global Institute of Technology"
+                  date="Degree with Distinction"
+                />
+             </View>
+          </FadeIn>
 
-        <Text style={styles.version}>HireVia v1.0.0 · Candidate Edition</Text>
-      </ScrollView>
-    </SafeAreaView>
+          {/* 🏷️ ghost expertise archive */}
+          <FadeIn delay={240} style={styles.section}>
+             <Text style={styles.editorialLabel}>EXPERTISE</Text>
+             <View style={styles.chipsRow}>
+                {['React', 'Node.js', 'Typescript', 'Tailwind', 'UI/UX'].map(skill => (
+                  <View key={skill} style={styles.ghostChip}>
+                    <Text style={styles.ghostChipText}>{skill.toUpperCase()}</Text>
+                  </View>
+                ))}
+             </View>
+
+             {/* Dynamic Resume Card */}
+             <View style={styles.assetCard}>
+                <View style={styles.assetIconBox}>
+                   <Ionicons name="document-text-outline" size={18} color={C.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                   <Text style={styles.assetTitle}>{displayFilename.toLowerCase()}</Text>
+                   <Text style={styles.assetMeta}>UPDATED 24H AGO</Text>
+                </View>
+                <TouchableOpacity style={styles.assetUpdateBtn}>
+                   <Text style={styles.updateBtnText}>UPDATE</Text>
+                </TouchableOpacity>
+             </View>
+          </FadeIn>
+
+          {/* 🚀 hero project */}
+          <FadeIn delay={320} style={styles.section}>
+             <Text style={styles.editorialLabel}>KEY PROJECT</Text>
+             <View style={styles.projectHero}>
+                <View style={styles.projectTopRow}>
+                   <Ionicons name="rocket-outline" size={24} color={C.onSurface} strokeWidth={2} />
+                   <View style={styles.yearBadge}>
+                      <Text style={styles.yearBadgeText}>2024</Text>
+                   </View>
+                </View>
+                <Text style={styles.projectHeroTitle}>HireVia - Job Platform</Text>
+                <Text style={styles.projectHeroDesc}>
+                   A high-performance job ecosystem reimagining the candidate experience through hyper-minimalist design and Node.js efficiency.
+                </Text>
+                <TouchableOpacity style={styles.caseStudyLink}>
+                   <Text style={styles.caseStudyText}>VIEW CASE STUDY</Text>
+                </TouchableOpacity>
+
+                <View style={styles.decorShape} />
+             </View>
+          </FadeIn>
+
+          {/* ⚙️ integrated settings */}
+          <FadeIn delay={400} style={styles.settingsSection}>
+             <View style={styles.settingList}>
+                {['Preferences', 'Privacy'].map(item => (
+                   <TouchableOpacity key={item} style={styles.settingRow}>
+                      <Text style={styles.settingLabel}>{item}</Text>
+                      <Ionicons name="chevron-forward" size={14} color={C.onSurfaceVar} />
+                   </TouchableOpacity>
+                ))}
+                <TouchableOpacity style={styles.settingRow} onPress={() => navigation.replace('Login')}>
+                   <Text style={[styles.settingLabel, { color: C.danger }]}>Sign Out</Text>
+                </TouchableOpacity>
+             </View>
+          </FadeIn>
+
+          <Text style={styles.versionFooter}>HIREVIA | ATELIER ELITE v1.0.4 </Text>
+
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: THEME.background },
-  scrollContent:      { paddingBottom: 100 },
+  root: { flex: 1, backgroundColor: C.background },
+  safeArea: { flex: 1 },
+  scrollContent: { paddingBottom: 220 },
 
-  // Header
-  header:             { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 },
-  headerTitle:        { fontSize: 24, fontWeight: '800', color: THEME.text, letterSpacing: -0.4 },
-  settingsIconBtn:    { width: 40, height: 40, borderRadius: 12, backgroundColor: THEME.surface, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: THEME.border },
+  topControl: { paddingHorizontal: 24, paddingTop: 16 },
 
-  // Profile card
-  profileCard:        { marginHorizontal: 16, backgroundColor: THEME.surface, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: THEME.border, alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 2 },
-  avatarWrapper:      { position: 'relative', marginBottom: 16 },
-  avatarRing:         { width: 84, height: 84, borderRadius: 42, padding: 3, borderWidth: 2, borderColor: THEME.primary + '40', backgroundColor: THEME.primaryLight },
-  avatar:             { flex: 1, borderRadius: 36, backgroundColor: THEME.primary, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
-  avatarText:         { fontSize: 26, fontWeight: '800', color: '#FFF', letterSpacing: -0.5 },
-  editAvatarBtn:      { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: THEME.primaryLight, borderWidth: 2, borderColor: THEME.surface, justifyContent: 'center', alignItems: 'center' },
-  profileName:        { fontSize: 20, fontWeight: '800', color: THEME.text, letterSpacing: -0.4, marginBottom: 4 },
-  profileEmail:       { fontSize: 13, color: THEME.textMuted, marginBottom: 14 },
-  editProfileBtn:     { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: THEME.primaryLight, borderWidth: 1, borderColor: THEME.primary + '30', marginBottom: 20 },
-  editProfileText:    { fontSize: 13, fontWeight: '700', color: THEME.primary },
-  statsRow:           { flexDirection: 'row', width: '100%', backgroundColor: THEME.surfaceLow, borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: THEME.border },
-  statItem:           { flex: 1, alignItems: 'center', paddingVertical: 14 },
-  statItemBorder:     { borderRightWidth: 1, borderRightColor: THEME.border },
-  statValue:          { fontSize: 20, fontWeight: '800', color: THEME.primary, letterSpacing: -0.4 },
-  statLabel:          { fontSize: 10, color: THEME.textSubtle, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 },
+  // identity Section
+  heroSection: { alignItems: 'center', marginTop: 24, marginBottom: 40 },
+  haloContainer: { width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  haloRing: { ...StyleSheet.absoluteFillObject, borderRadius: 55, opacity: 0.3 },
+  avatarWrapper: { width: 100, height: 100, borderRadius: 50, backgroundColor: C.surface, padding: 3 },
+  avatarImg: { width: '100%', height: '100%', borderRadius: 50 },
+  heroName: { fontSize: 24, fontWeight: '800', color: C.onSurface, letterSpacing: -0.6, marginBottom: 4 },
+  heroMeta: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.2 },
 
-  // Sections
-  section:            { paddingHorizontal: 16, marginBottom: 20 },
-  sectionTitle:       { fontSize: 11, fontWeight: '700', color: THEME.textSubtle, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginLeft: 4 },
-  settingsCard:       { backgroundColor: THEME.surface, borderRadius: 16, borderWidth: 1, borderColor: THEME.border, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
+  // Mastery Progress Card (Straight Update)
+  masteryCard: {
+    backgroundColor: C.surface,
+    marginHorizontal: 24,
+    padding: 28,
+    borderRadius: 32,
+    marginBottom: 56,
+  },
+  masteryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  masteryLabel: { 
+    fontSize: 9, 
+    fontWeight: '800', 
+    color: C.onSurfaceVar, 
+    letterSpacing: 2, 
+  },
+  masteryPercentLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: C.onSurface,
+    letterSpacing: 1,
+  },
+  masteryTrack: {
+    height: 4,
+    width: '100%',
+    backgroundColor: C.surfaceLow,
+    borderRadius: 10,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  masteryFill: {
+    height: '100%',
+    backgroundColor: C.primary,
+    borderRadius: 10,
+  },
+  masteryBody: { },
+  masteryDescription: { fontSize: 14, fontWeight: '600', color: C.onSurface, lineHeight: 20, marginBottom: 12 },
+  boostLink: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  boostLinkText: { fontSize: 10, fontWeight: '800', color: C.primary, letterSpacing: 1 },
 
-  // Setting item
-  settingItem:        { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14 },
-  settingIcon:        { width: 36, height: 36, borderRadius: 10, backgroundColor: THEME.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 14, flexShrink: 0 },
-  settingContent:     { flex: 1, marginRight: 8 },
-  settingTitle:       { fontSize: 14, fontWeight: '600', color: THEME.text },
-  settingValue:       { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
-  uploadBtn:          { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: THEME.primaryLight, borderWidth: 1, borderColor: THEME.primary + '30' },
-  uploadText:         { fontSize: 11, fontWeight: '700', color: THEME.primary },
-  divider:            { height: 1, backgroundColor: THEME.border, marginLeft: 66 },
+  // Editorial Sectioning
+  section: { paddingHorizontal: 24, marginBottom: 56 },
+  editorialLabel: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 2.5, marginBottom: 24 },
 
-  // Logout
-  logoutBtn:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginHorizontal: 16, paddingVertical: 16, borderRadius: 16, backgroundColor: THEME.dangerLight, borderWidth: 1, borderColor: THEME.danger + '20', marginBottom: 16 },
-  logoutText:         { fontSize: 15, fontWeight: '700', color: THEME.danger },
+  // Timeline
+  timelineBlock: { paddingLeft: 8 },
+  timelineRow: { flexDirection: 'row', minHeight: 110 },
+  timelineIndicators: { width: 24, alignItems: 'center', marginRight: 24, position: 'relative' },
+  timelineLine: { position: 'absolute', width: 2, backgroundColor: C.timelineLine, left: '50%', marginLeft: -1 },
+  timelineNode: { width: 24, height: 24, borderRadius: 12, backgroundColor: C.onSurface, justifyContent: 'center', alignItems: 'center', zIndex: 2, marginTop: 0 },
+  timelineInnerNode: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFF' },
+  timelineContent: { flex: 1 },
+  timelineHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  timelineTitle: { fontSize: 18, fontWeight: '800', color: C.onSurface, letterSpacing: -0.4 },
+  timelineStatusPin: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 1.2 },
+  timelineSub: { fontSize: 15, fontWeight: '600', color: C.onSurfaceVar, marginBottom: 8 },
+  timelineDate: { fontSize: 11, fontWeight: '700', color: C.onSurfaceVar },
 
-  // Version
-  version:            { textAlign: 'center', fontSize: 12, color: THEME.textSubtle, paddingBottom: 8 },
+  // ghost chips
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
+  ghostChip: { backgroundColor: C.surfaceLow, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
+  ghostChipText: { fontSize: 11, fontWeight: '800', color: C.onSurface, letterSpacing: 0.8 },
+
+  assetCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, padding: 16, borderRadius: 24, borderWidth: 1, borderColor: C.outline },
+  assetIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.background, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  assetTitle: { fontSize: 14, fontWeight: '700', color: C.onSurface },
+  assetMeta: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 1, marginTop: 2 },
+  assetUpdateBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6, borderWidth: 1, borderColor: C.outline },
+  updateBtnText: { fontSize: 9, fontWeight: '800', color: C.onSurface },
+
+  // Project
+  projectHero: { backgroundColor: C.surface, padding: 32, borderRadius: 32, overflow: 'hidden' },
+  projectTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  yearBadge: { backgroundColor: C.background, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  yearBadgeText: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVar },
+  projectHeroTitle: { fontSize: 24, fontWeight: '800', color: C.onSurface, letterSpacing: -0.6, marginBottom: 12 },
+  projectHeroDesc: { fontSize: 15, color: C.onSurfaceVar, lineHeight: 22, marginBottom: 24 },
+  caseStudyLink: { alignSelf: 'flex-start', borderBottomWidth: 1.5, borderBottomColor: C.primary, paddingBottom: 2 },
+  caseStudyText: { fontSize: 11, fontWeight: '800', color: C.primary, letterSpacing: 0.5 },
+  decorShape: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: C.background, bottom: -70, right: -40, zIndex: -1 },
+
+  // integrated settings
+  settingsSection: { paddingHorizontal: 24, marginTop: 20, paddingBottom: 40 },
+  settingList: { backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: 24, paddingVertical: 8 },
+  settingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.015)' },
+  settingLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: C.onSurface },
+
+  versionFooter: { textAlign: 'center', fontSize: 10, fontWeight: '700', color: 'rgba(0,0,0,0.1)', letterSpacing: 2, marginBottom: 40 },
 });

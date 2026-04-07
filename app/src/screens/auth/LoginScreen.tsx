@@ -4,6 +4,7 @@ import {
     ActivityIndicator, KeyboardAvoidingView, Platform, Alert, 
     Image, ScrollView, Animated, ImageBackground, StatusBar 
 } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -107,21 +108,21 @@ export default function LoginScreen({ navigation }: any) {
                 >
                     {/* 2. 'Airy Growth' Immersive Hero (Edge-to-Edge) */}
                     <View style={styles.heroContainer}>
-                        <ImageBackground 
-                            source={require('../../../assets/images/hero_airy.png')} 
-                            style={styles.heroImage}
-                            resizeMode="cover"
-                        >
-                            <LinearGradient
-                                colors={['rgba(255,255,255,0)', 'rgba(243,243,243,0.7)', '#F3F3F3']}
-                                locations={[0, 0.4, 1]}
-                                style={styles.heroGradient}
-                            />
-                            <View style={styles.heroTextContent}>
-                                <Text style={styles.heroLabel}>WORKSPACE EXCELLENCE</Text>
-                                <Text style={styles.heroTitle}>Architecture of a career.</Text>
-                            </View>
-                        </ImageBackground>
+                        <LottieView
+                            source={require('../../../assets/animations/job_hr.json')}
+                            autoPlay
+                            loop
+                            style={styles.heroLottie}
+                        />
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0)', 'rgba(243,243,243,0.7)', '#F3F3F3']}
+                            locations={[0, 0.4, 1]}
+                            style={styles.heroGradient}
+                        />
+                        <View style={styles.heroTextContent}>
+                            <Text style={styles.heroLabel}>WORKSPACE EXCELLENCE</Text>
+                            <Text style={styles.heroTitle}>Architecture of a career.</Text>
+                        </View>
                     </View>
 
                     {/* 3. Pure Matte Form Area */}
@@ -258,12 +259,12 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: '#FFFFFF',
     },
-    heroImage: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 32, paddingBottom: 80 },
+    heroLottie: { flex: 1, width: '100%' },
     heroGradient: { 
         position: 'absolute', left: 0, right: 0, bottom: 0, 
         height: '80%', // Smooth massive wash
     },
-    heroTextContent: { zIndex: 2 },
+    heroTextContent: { position: 'absolute', bottom: 80, left: 32, right: 32, zIndex: 2 },
     heroLabel: { 
         fontSize: 10, 
         fontWeight: '800', 

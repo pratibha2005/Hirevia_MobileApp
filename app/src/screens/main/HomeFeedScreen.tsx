@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import SkeletonLoader from '../../components/SkeletonLoader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -21,7 +22,7 @@ import { API_BASE_URL } from '../../api/config';
 
 const { width } = Dimensions.get('window');
 
-// ─── Exact Design Tokens from Design Analysis ────────────────────────────────
+// ─── Exact Design Tokens ────────────────────────────────────────────────────────
 const C = {
   background:     '#F3F3F3', // Pure Matte Light Grey
   surface:        '#FFFFFF', // Pure White for cards
@@ -33,7 +34,7 @@ const C = {
   outlineVar:     '#E6E6E6', // Barely visible structure line
 };
 
-// ─── Bar Chart Data ───────────────────────────────────────────────────────────
+// ─── Bar Chart Data ──────────────────────────────────────────────────────────────
 const CHART_DATA = [
   { day: 'Mon', value: 0.35 },
   { day: 'Tue', value: 0.55 },
@@ -46,35 +47,7 @@ const CHART_DATA = [
 const MAX_BAR_HEIGHT = 56;
 const BAR_ANIMS = CHART_DATA.map(() => new Animated.Value(0));
 
-// ─── Activity Data ────────────────────────────────────────────────────────────
-const ACTIVITIES = [
-  {
-    id: '1',
-    time: 'TODAY, 09:12',
-    title: 'Application Viewed',
-    desc: 'Your application for Spatial Lead was reviewed by the hiring team at Metahaus.',
-    isLast: false,
-    active: true,
-  },
-  {
-    id: '2',
-    time: 'YESTERDAY',
-    title: 'New Profile Match',
-    desc: 'Your skills align 95% with the new Design Principal opening.',
-    isLast: false,
-    active: false,
-  },
-  {
-    id: '3',
-    time: 'OCT 24',
-    title: 'Portfolio Update',
-    desc: 'Successfully synced your latest Behance projects to your HireVia profile.',
-    isLast: true,
-    active: false,
-  },
-];
-
-// ─── Animated Fade In ─────────────────────────────────────────────────────────
+// ─── Animated Fade In ────────────────────────────────────────────────────────────
 function FadeSlide({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: any }) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
@@ -90,39 +63,60 @@ function FadeSlide({ children, delay = 0, style }: { children: React.ReactNode; 
   return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
 }
 
-// ─── Bar Chart ────────────────────────────────────────────────────────────────
-// ─── Bar Chart ────────────────────────────────────────────────────────────────
+// ─── Bar Chart ───────────────────────────────────────────────────────────────────
 function BarChart({ data }: { data: typeof CHART_DATA }) {
+  const breath = useRef(new Animated.Value(1)).current;
+  const todayIndex = (new Date().getDay() + 6) % 7; // Sunday (0) -> 6, Monday (1) -> 0, etc.
+
   useEffect(() => {
-    BAR_ANIMS.forEach((anim, i) => {
-      anim.setValue(0);
+    // Initial State: Reset all bars to 0
+    BAR_ANIMS.forEach(anim => anim.setValue(0));
+    
+    // Staggered Elastic "Pop" Entry
+    const springs = BAR_ANIMS.map((anim, i) => 
+      Animated.spring(anim, {
+        toValue: 1,
+        tension: 100,
+        friction: 6,
+        useNativeDriver: false,
+        delay: i * 50
+      })
+    );
+    Animated.stagger(50, springs).start();
+
+    // Looping breath for ONLY today's bar
+    Animated.loop(
       Animated.sequence([
-        Animated.delay(400 + i * 60),
-        Animated.spring(anim, { toValue: 1, useNativeDriver: false, tension: 80, friction: 8 }),
-      ]).start();
-    });
+        Animated.timing(breath, { toValue: 1.05, duration: 1500, useNativeDriver: false }),
+        Animated.timing(breath, { toValue: 1, duration: 2500, useNativeDriver: false }),
+      ])
+    ).start();
   }, [data]);
 
   return (
     <View style={styles.chartContainer}>
       {data.map((bar, i) => {
-        const isLast = i === data.length - 1;
+        const isToday = i === todayIndex;
         const barHeight = BAR_ANIMS[i].interpolate({
           inputRange: [0, 1],
-          outputRange: [4, bar.value * MAX_BAR_HEIGHT],
+          outputRange: [2, bar.value * MAX_BAR_HEIGHT],
         });
+
         return (
           <View key={bar.day} style={styles.barCol}>
             <View style={styles.barTrack}>
               <Animated.View
                 style={[
                   styles.barFill,
-                  isLast ? styles.barFillActive : styles.barFillMuted,
-                  { height: barHeight },
+                  isToday ? styles.barFillActive : styles.barFillMuted,
+                  { 
+                    height: Animated.multiply(barHeight, isToday ? breath : 1),
+                    opacity: isToday ? 1 : 0.8
+                  },
                 ]}
               />
             </View>
-            <Text style={[styles.barLabel, isLast && styles.barLabelActive]}>
+            <Text style={[styles.barLabel, isToday && styles.barLabelActive]}>
               {bar.day}
             </Text>
           </View>
@@ -132,7 +126,16 @@ function BarChart({ data }: { data: typeof CHART_DATA }) {
   );
 }
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Dynamic Image Helper ───────────────────────────────────────────────────────
+const getJobImage = (title: string, company: string = '') => {
+  const t = title.toLowerCase();
+  const c = company.toLowerCase();
+  if (t.includes('design') || t.includes('ux') || t.includes('ui')) return 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80';
+  if (t.includes('develop') || t.includes('engineer')) return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80';
+  return 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80';
+};
+
+// ─── Main Screen ────────────────────────────────────────────────────────────────
 export default function HomeFeedScreen() {
   const navigation = useNavigation<any>();
   const [jobs, setJobs] = useState<any[]>([]);
@@ -146,8 +149,6 @@ export default function HomeFeedScreen() {
     if (isRefresh) setRefreshing(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      
-      // Fetch Jobs
       const jobRes = await fetch(`${API_BASE_URL}/api/jobs`);
       const jobData = await jobRes.json();
       if (jobData.success) {
@@ -157,56 +158,25 @@ export default function HomeFeedScreen() {
           company: j.companyId?.name || 'Unknown Company',
           location: j.location,
           salary: j.salary || 'Salary not disclosed',
-          type: j.type || 'Full-time',
           tags: j.skills || [],
-          logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(j.companyId?.name || 'C')}&background=0F4C5C&color=fff&size=120`,
-          description: j.description,
-          screeningQuestions: j.screeningQuestions || [],
+          logo: j.companyId?.logoUrl || getJobImage(j.title, j.companyId?.name),
         }));
         setJobs(jobList);
-        
-        // Simulating Market Pulse
-        const newChart = CHART_DATA.map(d => ({
-          ...d,
-          value: Math.min(1.0, d.value * (0.9 + Math.random() * 0.2) + (jobList.length / 100)),
-        }));
-        setDynamicChart(newChart);
+        setDynamicChart(CHART_DATA.map(d => ({ ...d, value: Math.min(1.0, d.value * (0.9 + Math.random() * 0.2) + (jobList.length / 100)) })));
       }
-
-      // Fetch Applications
       if (token) {
-        const appRes = await fetch(`${API_BASE_URL}/api/applications/my`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const appRes = await fetch(`${API_BASE_URL}/api/applications/my`, { headers: { Authorization: `Bearer ${token}` } });
         const appData = await appRes.json();
         if (appData.success) setApplications(appData.applications);
       }
-    } catch (e) {
-      console.error('Failed to fetch data', e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); setRefreshing(false); }
   };
 
   useEffect(() => {
     fetchData();
-    AsyncStorage.getItem('user').then(u => {
-      if (u) setUserName(JSON.parse(u).name?.split(' ')[0] || 'there');
-    });
+    AsyncStorage.getItem('user').then(u => { if (u) setUserName(JSON.parse(u).name?.split(' ')[0] || 'there'); });
   }, []);
-
-  // Derive Activities
-  const displayActivities = applications.length > 0 
-    ? applications.slice(0, 3).map((app, i) => ({
-        id: app._id,
-        time: new Date(app.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase(),
-        title: app.status === 'New' ? 'Application Sent' : app.status,
-        desc: `Your application for ${app.jobId?.title} at ${app.jobId?.companyId?.name} is ${app.status.toLowerCase()}.`,
-        isLast: i === applications.length - 1 || i === 2,
-        active: app.status !== 'Rejected',
-      }))
-    : ACTIVITIES;
 
   const activeMotion = applications.find(a => a.status !== 'Rejected') || null;
 
@@ -216,21 +186,16 @@ export default function HomeFeedScreen() {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScrollView 
           contentContainerStyle={styles.scroll} 
-          showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={C.primary} />}
         >
-          {/* Header */}
           <FadeSlide delay={0} style={styles.header}>
             <View style={styles.headerLeft}>
               <View style={styles.avatar}><Ionicons name="person" size={16} color={C.primary} /></View>
               <Text style={styles.workspaceLabel}>Hello, {userName} 👋</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Ionicons name="search" size={20} color={C.onSurface} />
-            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Search')}><Ionicons name="search" size={20} color={C.onSurface} /></TouchableOpacity>
           </FadeSlide>
 
-          {/* Market Pulse */}
           <FadeSlide delay={80}>
             <Text style={styles.sectionLabel}>MARKET PULSE</Text>
             <Text style={styles.pulseHeadline}>Your profile is gaining <Text style={styles.pulseHighlight}>momentum</Text> in your area.</Text>
@@ -238,29 +203,17 @@ export default function HomeFeedScreen() {
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* In Motion */}
           <FadeSlide delay={160}>
             <Text style={styles.sectionLabel}>IN MOTION</Text>
             <View style={styles.cleanMotionCard}>
               <View style={styles.cleanMotionHeaderRow}>
-                <View style={[styles.cleanStagePill, activeMotion?.status === 'Rejected' && { backgroundColor: '#fee2e2' }]}>
-                  <Text style={[styles.cleanStageText, activeMotion?.status === 'Rejected' && { color: '#ef4444' }]}>
-                    {(activeMotion?.status || 'No Active Apps').toUpperCase()}
-                  </Text>
-                </View>
+                <View style={styles.cleanStagePill}><Text style={styles.cleanStageText}>{(activeMotion?.status || 'No Active Apps').toUpperCase()}</Text></View>
                 <Text style={styles.cleanDateText}>{activeMotion ? new Date(activeMotion.appliedAt).toLocaleDateString().toUpperCase() : 'TODAY'}</Text>
               </View>
               <Text style={styles.cleanCompanyText}>{activeMotion?.jobId?.companyId?.name || 'Explore Opportunities'}</Text>
               <Text style={styles.cleanRoleText}>{activeMotion?.jobId?.title || 'Start applying to see updates'}</Text>
               <View style={styles.cleanActionRow}>
-                <View style={styles.cleanDurationBox}>
-                  <Ionicons name="time-outline" size={14} color={C.onSurfaceVar} />
-                  <Text style={styles.cleanDurationText}>{activeMotion ? 'Track Process' : 'Browse Jobs'}</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.cleanJoinBtn}
-                  onPress={() => activeMotion ? navigation.navigate('Applications') : navigation.navigate('Search')}
-                >
+                <TouchableOpacity style={styles.cleanJoinBtn} onPress={() => activeMotion ? navigation.navigate('Applications') : navigation.navigate('Search')}>
                   <Text style={styles.cleanJoinBtnText}>{activeMotion ? 'VIEW STATUS' : 'FIND JOBS'}</Text>
                   <Ionicons name="arrow-forward" size={14} color="#FFF" />
                 </TouchableOpacity>
@@ -269,22 +222,33 @@ export default function HomeFeedScreen() {
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* Discover */}
           <FadeSlide delay={240}>
             <View style={styles.sectionHeader}>
-              <View>
-                <Text style={styles.sectionLabel}>CURATED FOR YOU</Text>
-                <Text style={styles.sectionTitle}>Discover</Text>
-              </View>
+              <View><Text style={styles.sectionLabel}>CURATED FOR YOU</Text><Text style={styles.sectionTitle}>Discover</Text></View>
               <TouchableOpacity onPress={() => navigation.navigate('Search')}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
             </View>
             <View style={{ marginHorizontal: -24 }}>
-              {loading ? <ActivityIndicator size="large" color={C.primary} style={{ marginTop: 20 }} /> : (
+              {loading ? (
                 <FlatList
                   horizontal
-                  data={jobs}
-                  keyExtractor={(item) => item.id}
+                  data={[1, 2, 3]}
+                  keyExtractor={(i) => i.toString()}
                   showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingLeft: 24, paddingRight: 48 }}
+                  renderItem={() => (
+                    <View style={[styles.jobCard, { borderColor: 'transparent' }]}>
+                      <SkeletonLoader height={120} />
+                      <View style={styles.jobCardContent}>
+                        <SkeletonLoader height={10} width="40%" style={{ marginBottom: 8 }} />
+                        <SkeletonLoader height={16} width="80%" style={{ marginBottom: 8 }} />
+                        <SkeletonLoader height={12} width="60%" />
+                      </View>
+                    </View>
+                  )}
+                />
+              ) : (
+                <FlatList
+                  horizontal data={jobs} keyExtractor={(item) => item.id} showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ paddingLeft: 24, paddingRight: 48 }}
                   renderItem={({ item }) => (
                     <TouchableOpacity style={styles.jobCard} onPress={() => navigation.navigate('JobDetails', { job: item })}>
@@ -293,7 +257,6 @@ export default function HomeFeedScreen() {
                         <Text style={styles.jobTags}>{(Array.isArray(item.tags) ? item.tags.join(' • ') : item.tags || '').toUpperCase()}</Text>
                         <Text style={styles.jobTitle} numberOfLines={1}>{item.title}</Text>
                         <Text style={styles.jobCompany}>{item.company}</Text>
-                        <Text style={styles.jobSalary}>{item.salary}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
@@ -303,23 +266,42 @@ export default function HomeFeedScreen() {
             <View style={styles.divider} />
           </FadeSlide>
 
-          {/* Recent Activity */}
           <FadeSlide delay={400}>
             <Text style={styles.sectionLabel}>RECENT ACTIVITY</Text>
             <View style={styles.activityList}>
-              {displayActivities.map((item: any) => (
-                <View key={item.id} style={styles.activityItem}>
+              {loading ? [1, 2, 3].map(i => (
+                <View key={i} style={[styles.activityItem, { marginBottom: 24 }]}>
                   <View style={styles.timelineCol}>
-                    <View style={[styles.timelineDot, item.active && styles.timelineDotActive]} />
-                    {!item.isLast && <View style={styles.timelineLine} />}
+                    <SkeletonLoader width={8} height={8} borderRadius={4} />
+                    <View style={styles.timelineLine} />
                   </View>
                   <View style={styles.activityContent}>
-                    <Text style={styles.activityTime}>{item.time}</Text>
-                    <Text style={styles.activityTitle}>{item.title}</Text>
-                    <Text style={styles.activityDesc}>{item.desc}</Text>
+                    <SkeletonLoader height={10} width="30%" style={{ marginBottom: 8 }} />
+                    <SkeletonLoader height={16} width="70%" style={{ marginBottom: 8 }} />
+                    <SkeletonLoader height={12} width="90%" />
                   </View>
                 </View>
-              ))}
+              )) : (
+                applications.length > 0 ? (
+                  applications.slice(0, 3).map((app, i) => (
+                    <View key={app._id} style={styles.activityItem}>
+                      <View style={styles.timelineCol}>
+                        <View style={[styles.timelineDot, app.status !== 'Rejected' && styles.timelineDotActive]} />
+                        {i < 2 && <View style={styles.timelineLine} />}
+                      </View>
+                      <View style={styles.activityContent}>
+                        <Text style={styles.activityTime}>{new Date(app.appliedAt).toLocaleDateString().toUpperCase()}</Text>
+                        <Text style={styles.activityTitle}>{app.jobId?.title}</Text>
+                        <Text style={styles.activityDesc}>{app.status}</Text>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyText}>No recent activity found.</Text>
+                  </View>
+                )
+              )}
             </View>
           </FadeSlide>
           <View style={{ height: 110 }} />
@@ -329,40 +311,27 @@ export default function HomeFeedScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   root:              { flex: 1, backgroundColor: C.background },
   safeArea:          { flex: 1 },
   scroll:            { paddingHorizontal: 24, paddingTop: 16 },
-
-  // Header
   header:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 },
   headerLeft:        { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatar:            { width: 32, height: 32, borderRadius: 16, backgroundColor: C.primaryLight, alignItems: 'center', justifyContent: 'center' },
   workspaceLabel:    { fontSize: 18, fontWeight: '500', color: C.onSurface, letterSpacing: -0.3 },
-
-  // Shared
   sectionLabel:      { fontSize: 10, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 },
-  divider:           { height: 48, backgroundColor: 'transparent' }, // Used for spacing without visible lines
-
-  // Market Pulse
+  divider:           { height: 56, backgroundColor: 'transparent' },
   pulseHeadline:     { fontSize: 24, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, lineHeight: 32 },
   pulseHighlight:    { fontWeight: '600' },
-  pulseStatRow:      { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
-  pulseStat:         { fontSize: 24, fontWeight: '600', color: C.onSurface },
-  pulseStatLabel:    { fontSize: 12, color: C.onSurfaceVar, fontWeight: '400' },
-
-  // Chart
   chartContainer:    { flexDirection: 'row', alignItems: 'flex-end', gap: 6, marginTop: 20, paddingBottom: 4 },
   barCol:            { flex: 1, alignItems: 'center', gap: 6 },
   barTrack:          { height: MAX_BAR_HEIGHT, justifyContent: 'flex-end', width: '100%', borderRadius: 2, overflow: 'hidden' },
   barFill:           { width: '100%', borderRadius: 2 },
-  barFillMuted:      { backgroundColor: C.outlineVar }, // exactly as design: grey bars
-  barFillActive:     { backgroundColor: C.primary },    // deep blue for active
+  barFillMuted:      { backgroundColor: C.outlineVar },
+  barFillActive:     { backgroundColor: C.primary },
   barLabel:          { fontSize: 10, fontWeight: '500', color: C.onSurfaceVar },
   barLabelActive:    { color: C.primary, fontWeight: '700' },
-
-  // Pristine Minimal Motion Card
+  chartWrapper:      { position: 'relative' },
   cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVar }, 
   cleanMotionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   cleanStagePill:    { backgroundColor: C.surfaceLow, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4 },
@@ -370,14 +339,9 @@ const styles = StyleSheet.create({
   cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.0 },
   cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 8 },
   cleanRoleText:     { fontSize: 26, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, marginBottom: 24 }, 
-  cleanDivider:      { height: 40, backgroundColor: 'transparent' }, 
   cleanActionRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cleanDurationBox:  { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cleanDurationText: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5 },
   cleanJoinBtn:      { flexDirection: 'row', alignItems: 'center', backgroundColor: C.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100, gap: 8 },
   cleanJoinBtnText:  { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 1.5 },
-
-  // Discover
   sectionHeader:     { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24 },
   sectionTitle:      { fontSize: 24, fontWeight: '600', color: C.onSurface, letterSpacing: -0.5 },
   seeAll:            { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 4 },
@@ -387,11 +351,6 @@ const styles = StyleSheet.create({
   jobTags:           { fontSize: 9, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 10 },
   jobTitle:          { fontSize: 16, fontWeight: '600', color: C.onSurface, marginBottom: 6 },
   jobCompany:        { fontSize: 13, color: C.onSurfaceVar, marginBottom: 16 },
-  jobSalary:         { fontSize: 14, fontWeight: '600', color: C.onSurface },
-  emptyState:        { alignItems: 'center', paddingHorizontal: 40, marginTop: 10 },
-  emptyText:         { fontSize: 15, fontWeight: '500', color: C.onSurfaceVar, marginTop: 10, textAlign: 'center' },
-
-  // Activity
   activityList:      { marginTop: 16 },
   activityItem:      { flexDirection: 'row' },
   timelineCol:       { alignItems: 'center', width: 20, marginRight: 20 },
@@ -402,4 +361,6 @@ const styles = StyleSheet.create({
   activityTime:      { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.5, marginBottom: 8 },
   activityTitle:     { fontSize: 16, fontWeight: '500', color: C.onSurface, marginBottom: 6, letterSpacing: -0.2 },
   activityDesc:      { fontSize: 14, fontWeight: '400', color: C.onSurfaceVar, lineHeight: 22 },
+  emptyState:        { alignItems: 'center', paddingVertical: 20 },
+  emptyText:         { fontSize: 13, color: C.onSurfaceVar },
 });

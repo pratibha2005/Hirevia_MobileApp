@@ -1,261 +1,230 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Animated, Easing, Dimensions, RefreshControl, TextInput, Pressable, ImageBackground } from 'react-native';
+import SkeletonLoader from '../../components/SkeletonLoader';
+import LottieView from 'lottie-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
 import { API_BASE_URL } from '../../api/config';
-import ApplicationCard from './ApplicationCard';
 
-// ─── Design System ────────────────────────────────────────────────────────────
-const THEME = {
-  primary:        '#4F46E5',
-  primaryLight:   '#EEF2FF',
-  background:     '#F8FAFC',
-  surface:        '#FFFFFF',
-  surfaceLow:     '#F1F5F9',
-  text:           '#111827',
-  textMuted:      '#6B7280',
-  textSubtle:     '#9CA3AF',
-  border:         '#E5E7EB',
-  success:        '#22C55E',
-  successLight:   '#F0FDF4',
-  danger:         '#EF4444',
-  dangerLight:    '#FEF2F2',
-  warning:        '#F59E0B',
-  warningLight:   '#FFFBEB',
-  secondary:      '#06B6D4',
+// ─── Exact Design Tokens ──────────────────────────────────────────────────────
+const C = {
+  background:     '#F3F3F3', // Pure Matte Light Grey
+  surface:        '#FFFFFF', // Pure White for cards
+  surfaceLow:     '#FAFAFA', // Ultra-soft grey for chips
+  primary:        '#2C2C2C', // Deep Matte Dark Grey
+  primaryLight:   '#EBEBEB', // Soft structural grey
+  onSurface:      '#1A1A1A', // Matte Black
+  onSurfaceVar:   '#7A7A7A', // Matte medium grey
+  outlineVar:     '#E6E6E6', // Barely visible structure line
 };
 
-const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string; label: string }> = {
-  'New':         { color: THEME.primary,  bg: THEME.primaryLight, icon: 'time-outline',         label: 'Applied' },
-  'Under Review':{ color: THEME.warning,  bg: THEME.warningLight, icon: 'eye-outline',           label: 'Under Review' },
-  'Shortlisted': { color: THEME.success,  bg: THEME.successLight, icon: 'checkmark-circle-outline', label: 'Shortlisted' },
-  'Rejected':    { color: THEME.textSubtle, bg: THEME.surfaceLow, icon: 'close-circle-outline',  label: 'Rejected' },
+const STATUS_COLORS: Record<string, { label: string; accent: string; bg: string }> = {
+  'New':          { label: 'SENT',         accent: C.onSurface, bg: C.primaryLight },
+  'Under Review': { label: 'REVIEW',       accent: C.onSurface, bg: C.primaryLight },
+  'Shortlisted':  { label: 'MATCHED',      accent: C.onSurface, bg: C.primaryLight },
+  'Interview':    { label: 'INTERVIEW',    accent: C.surface,   bg: C.primary },
+  'Offer':        { label: 'OFFER',        accent: C.surface,   bg: C.primary },
+  'Hired':        { label: 'HIRED',        accent: C.surface,   bg: C.primary },
+  'Rejected':     { label: 'CLOSED',       accent: C.onSurfaceVar, bg: C.outlineVar },
 };
 
-const FILTERS = ['All', 'Active', 'Shortlisted', 'Closed'];
+const FILTERS = ['All', 'Active', 'Interviews', 'Archived'];
 
-// ─── Timeline Step ────────────────────────────────────────────────────────────
-const PIPELINE_STEPS = ['Applied', 'Review', 'Shortlisted', 'Interview', 'Offer'];
-
-function PipelineTimeline({ status }: { status: string }) {
-  const activeIdx = status === 'New' ? 0 : status === 'Under Review' ? 1 : status === 'Shortlisted' ? 2 : status === 'Rejected' ? -1 : 0;
-  if (activeIdx === -1) return null;
-
-  return (
-    <View style={tl.container}>
-      {PIPELINE_STEPS.slice(0, 4).map((step, i) => (
-        <View key={step} style={{ flex: 1, alignItems: 'center' }}>
-          <View style={[tl.dot, i <= activeIdx ? tl.dotActive : tl.dotInactive]}>
-            {i <= activeIdx && <View style={tl.dotInner} />}
-          </View>
-          {i < PIPELINE_STEPS.length - 2 && (
-            <View style={[tl.line, i < activeIdx ? tl.lineActive : tl.lineInactive]} />
-          )}
-          <Text style={[tl.label, i <= activeIdx ? tl.labelActive : tl.labelInactive]} numberOfLines={1}>{step}</Text>
-        </View>
-      ))}
-    </View>
-  );
+function FadeIn({ children, delay = 0, style }: any) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(12)).current;
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 400, useNativeDriver: true, easing: Easing.out(Easing.quad) }),
+      ]),
+    ]).start();
+  }, []);
+  return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
 }
 
-const tl = StyleSheet.create({
-  container:    { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, position: 'relative' },
-  dot:          { width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
-  dotActive:    { backgroundColor: THEME.primary, borderWidth: 2, borderColor: THEME.primaryLight },
-  dotInactive:  { backgroundColor: '#E5E7EB', borderWidth: 2, borderColor: '#F1F5F9' },
-  dotInner:     { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFF' },
-  line:         { position: 'absolute', top: 7, left: '50%', right: '-50%', height: 2, zIndex: 1 },
-  lineActive:   { backgroundColor: THEME.primary },
-  lineInactive: { backgroundColor: '#E5E7EB' },
-  label:        { fontSize: 9, marginTop: 5, textAlign: 'center', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3, maxWidth: 60 },
-  labelActive:  { color: THEME.primary },
-  labelInactive:{ color: THEME.textSubtle },
-});
-
-// ─── Application Card ─────────────────────────────────────────────────────────
-function AppCard({ item }: { item: any }) {
-  const job = item.jobId;
-  const company = job?.companyId;
+function ApplicationItemCard({ item, index }: { item: any; index: number }) {
+  const job = item.jobId || {};
+  const company = job.companyId || {};
   const statusKey = item.status || 'New';
-  const cfg = STATUS_CONFIG[statusKey] || STATUS_CONFIG['New'];
-  const companyName = company?.name || 'Unknown Company';
-  const jobTitle = job?.title || 'Unknown Role';
-  const location = job?.location || 'Remote';
-  const appliedDate = new Date(item.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const cfg = STATUS_COLORS[statusKey] || STATUS_COLORS['New'];
+  const scale = useRef(new Animated.Value(1)).current;
+  const onPressIn = () => Animated.spring(scale, { toValue: 0.98, useNativeDriver: true }).start();
+  const onPressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
   return (
-    <View style={styles.card}>
-      {/* Card header */}
-      <View style={styles.cardHeader}>
-        <View style={styles.companyLogoWrapper}>
-          <Text style={styles.companyLogoText}>{companyName.charAt(0)}</Text>
-        </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.jobTitle} numberOfLines={1}>{jobTitle}</Text>
-          <Text style={styles.companyName}>{companyName}</Text>
-          <View style={styles.cardMeta}>
-            <View style={styles.metaChip}>
-              <Ionicons name="location-outline" size={10} color={THEME.textMuted} />
-              <Text style={styles.metaText}>{location}</Text>
-            </View>
-            <View style={styles.metaChip}>
-              <Ionicons name="calendar-outline" size={10} color={THEME.textMuted} />
-              <Text style={styles.metaText}>{appliedDate}</Text>
-            </View>
+    <FadeIn delay={index * 50}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Pressable onPressIn={onPressIn} onPressOut={onPressOut} style={styles.cleanMotionCard}>
+          <View style={styles.cleanMotionHeaderRow}>
+             <View style={[styles.cleanStagePill, { backgroundColor: cfg.bg }]}><Text style={[styles.cleanStageText, { color: cfg.accent }]}>{cfg.label.toUpperCase()}</Text></View>
+             <Text style={styles.cleanDateText}>{new Date(item.appliedAt).toLocaleDateString().toUpperCase()}</Text>
           </View>
-        </View>
-        <View style={[styles.statusPill, { backgroundColor: cfg.bg }]}>
-          <Ionicons name={cfg.icon as any} size={10} color={cfg.color} style={{ marginRight: 3 }} />
-          <Text style={[styles.statusText, { color: cfg.color }]}>{cfg.label}</Text>
-        </View>
-      </View>
-
-      {/* Pipeline tracker */}
-      {statusKey !== 'Rejected' && <PipelineTimeline status={statusKey} />}
-      {statusKey === 'Rejected' && (
-        <View style={styles.rejectedBar}>
-          <Ionicons name="close-circle" size={13} color={THEME.danger} />
-          <Text style={styles.rejectedText}>Application not selected this time</Text>
-        </View>
-      )}
-    </View>
+          <Text style={styles.cleanCompanyText}>{company.name || 'Unknown Studio'}</Text>
+          <Text style={styles.cleanRoleText}>{job.title || 'Untitled Narrative'}</Text>
+          <View style={styles.cleanActionRow}>
+             <View style={styles.cleanDurationBox}>
+                <Ionicons name="location-outline" size={14} color={C.onSurfaceVar} />
+                <Text style={styles.cleanDurationText}>{job.location || 'Remote'}</Text>
+             </View>
+             <TouchableOpacity style={styles.cleanJoinBtn}><Text style={styles.cleanJoinBtnText}>VIEW STATUS</Text><Ionicons name="arrow-forward" size={14} color="#FFF" /></TouchableOpacity>
+          </View>
+        </Pressable>
+      </Animated.View>
+    </FadeIn>
   );
 }
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ApplicationsScreen() {
+  const navigation = useNavigation<any>();
   const [applications, setApplications] = useState<any[]>([]);
+  const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchHeight = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(searchHeight, { toValue: showSearch ? 72 : 0, duration: 300, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
+  }, [showSearch]);
+
+  const [tabLayouts, setTabLayouts] = useState<Record<string, { x: number; width: number }>>({});
+  const translateX = useRef(new Animated.Value(0)).current;
+  const indicatorWidth = useRef(new Animated.Value(0)).current;
+
+  const handleTabLayout = (filter: string, event: any) => {
+    const { x, width } = event.nativeEvent.layout;
+    setTabLayouts(prev => ({ ...prev, [filter]: { x, width } }));
+  };
+
+  useEffect(() => {
+    const layout = tabLayouts[activeFilter];
+    if (layout) {
+      Animated.parallel([
+        Animated.spring(translateX, { toValue: layout.x, useNativeDriver: false, tension: 70, friction: 12 }),
+        Animated.spring(indicatorWidth, { toValue: layout.width, useNativeDriver: false, tension: 70, friction: 12 }),
+      ]).start();
+    }
+  }, [activeFilter, tabLayouts]);
 
   const fetchApplications = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
+    if (isRefresh) setRefreshing(true); else setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      if (!token) return;
-      const res = await fetch(`${API_BASE_URL}/api/applications/my`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) setApplications(data.applications);
-    } catch (e) {
-      console.error('Failed to fetch applications', e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      if (token) {
+        const res = await fetch(`${API_BASE_URL}/api/applications/my`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) setApplications(data.applications || []);
+      }
+    } catch (e) { console.log(e); }
+    finally { setLoading(false); setRefreshing(false); }
   };
 
   useFocusEffect(useCallback(() => { fetchApplications(); }, []));
 
-  const filtered = applications.filter(a => {
-    if (activeFilter === 'All') return true;
-    if (activeFilter === 'Active') return ['New', 'Under Review'].includes(a.status);
-    if (activeFilter === 'Shortlisted') return a.status === 'Shortlisted';
-    if (activeFilter === 'Closed') return a.status === 'Rejected';
-    return true;
-  });
+  let filtered = applications;
+  if (activeFilter === 'Active') filtered = applications.filter(a => !['Rejected', 'Hired', 'Offer'].includes(a.status));
+  else if (activeFilter === 'Interviews') filtered = applications.filter(a => ['Interview'].includes(a.status));
+  else if (activeFilter === 'Archived') filtered = applications.filter(a => ['Rejected', 'Hired', 'Offer'].includes(a.status));
+
+  if (searchQuery) {
+    filtered = filtered.filter(a => a.jobId?.title?.toLowerCase().includes(searchQuery.toLowerCase()) || a.jobId?.companyId?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+  }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>My Applications</Text>
-          <Text style={styles.headerSub}>Track your pipeline progress</Text>
+    <View style={styles.root}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.screenHeader}>
+           <View><Text style={styles.sectionLabel}>YOUR ARCHIVE</Text><Text style={styles.sectionTitle}>Applications</Text></View>
+           <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={styles.searchIconTap}><Ionicons name="search" size={24} color={C.onSurface} /></TouchableOpacity>
         </View>
-        <View style={styles.headerStats}>
-          <Text style={styles.statNum}>{applications.length}</Text>
-          <Text style={styles.statLabel}>Total</Text>
+
+        <Animated.View style={[styles.searchWrapper, { height: searchHeight, opacity: searchHeight.interpolate({ inputRange: [0, 72], outputRange: [0, 1] }) }]}>
+           <View style={styles.gallerySearchArea}>
+              <Ionicons name="search-outline" size={18} color={C.onSurfaceVar} style={{ marginRight: 12 }} />
+              <TextInput placeholder="Search index..." style={styles.searchInput} value={searchQuery} onChangeText={setSearchQuery} placeholderTextColor={C.onSurfaceVar} />
+           </View>
+        </Animated.View>
+
+        <View style={styles.tabsContainer}>
+          {FILTERS.map(f => (
+            <TouchableOpacity key={f} style={styles.tabItem} onPress={() => setActiveFilter(f)} onLayout={(e) => handleTabLayout(f, e)}>
+              <Text style={[styles.tabLabel, activeFilter === f && styles.tabLabelActive]}>{f.toUpperCase()}</Text>
+            </TouchableOpacity>
+          ))}
+          <Animated.View style={[styles.tabUnderline, { width: indicatorWidth, transform: [{ translateX }] }]} />
         </View>
-      </View>
 
-      {/* Filter tabs */}
-      <View style={styles.filterRow}>
-        {FILTERS.map(f => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterTab, activeFilter === f && styles.filterTabActive]}
-            onPress={() => setActiveFilter(f)}
-          >
-            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>{f}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <FlatList
-        data={filtered}
-        keyExtractor={item => item._id}
-        renderItem={({ item }) => <AppCard item={item} />}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => fetchApplications(true)} tintColor={THEME.primary} colors={[THEME.primary]} />
-        }
-        ListEmptyComponent={
-          loading ? (
-            <ActivityIndicator size="large" color={THEME.primary} style={{ marginTop: 60 }} />
-          ) : (
-            <View style={styles.emptyState}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="document-text-outline" size={32} color={THEME.textSubtle} />
+        {loading && !refreshing ? (
+          <View style={styles.listContainer}>
+             {[1, 2, 3].map(i => (
+               <View key={i} style={styles.cleanMotionCard}>
+                  <View style={styles.cleanMotionHeaderRow}>
+                     <SkeletonLoader width={80} height={20} borderRadius={4} />
+                     <SkeletonLoader width={60} height={10} />
+                  </View>
+                  <SkeletonLoader width={120} height={14} style={{ marginBottom: 12 }} />
+                  <SkeletonLoader width={200} height={28} style={{ marginBottom: 24 }} />
+                  <View style={styles.cleanActionRow}>
+                     <SkeletonLoader width={100} height={16} />
+                     <SkeletonLoader width={120} height={40} borderRadius={100} />
+                  </View>
+               </View>
+             ))}
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item, index }) => <ApplicationItemCard item={item} index={index} />}
+            contentContainerStyle={styles.listContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchApplications(true)} tintColor={C.primary} />}
+            ListEmptyComponent={
+              <View style={styles.emptyView}>
+                <LottieView source={require('../../../assets/animations/no_item_found.json')} autoPlay loop style={{ width: 200, height: 200 }} />
+                <Text style={styles.emptyLabel}>END OF LIST</Text>
               </View>
-              <Text style={styles.emptyTitle}>No applications yet</Text>
-              <Text style={styles.emptySub}>Start browsing jobs and apply to see them here.</Text>
-            </View>
-          )
-        }
-      />
-    </SafeAreaView>
+            }
+          />
+        )}
+      </SafeAreaView>
+    </View>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: THEME.background },
-
-  // Header
-  header:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16, backgroundColor: THEME.surface, borderBottomWidth: 1, borderBottomColor: THEME.border },
-  headerTitle:        { fontSize: 22, fontWeight: '800', color: THEME.text, letterSpacing: -0.4 },
-  headerSub:          { fontSize: 13, color: THEME.textMuted, marginTop: 2 },
-  headerStats:        { alignItems: 'center', backgroundColor: THEME.primaryLight, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: THEME.primary + '30' },
-  statNum:            { fontSize: 20, fontWeight: '800', color: THEME.primary, letterSpacing: -0.4 },
-  statLabel:          { fontSize: 10, color: THEME.primary + 'AA', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-
-  // Filters
-  filterRow:          { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 8, backgroundColor: THEME.surface, borderBottomWidth: 1, borderBottomColor: THEME.border },
-  filterTab:          { flex: 1, paddingVertical: 7, borderRadius: 10, alignItems: 'center', backgroundColor: THEME.surfaceLow, borderWidth: 1, borderColor: THEME.border },
-  filterTabActive:    { backgroundColor: THEME.primary, borderColor: THEME.primary },
-  filterText:         { fontSize: 12, fontWeight: '700', color: THEME.textMuted },
-  filterTextActive:   { color: '#FFF' },
-
-  // List
-  listContent:        { paddingHorizontal: 16, paddingVertical: 16, paddingBottom: 120, gap: 12 },
-
-  // Card
-  card:               { backgroundColor: THEME.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: THEME.border, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
-  cardHeader:         { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  companyLogoWrapper: { width: 44, height: 44, borderRadius: 12, backgroundColor: THEME.primary, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 3, shrink: 0 } as any,
-  companyLogoText:    { fontSize: 18, fontWeight: '800', color: '#FFF' },
-  cardInfo:           { flex: 1 },
-  jobTitle:           { fontSize: 15, fontWeight: '700', color: THEME.text, letterSpacing: -0.2, marginBottom: 2 },
-  companyName:        { fontSize: 12, color: THEME.textMuted, fontWeight: '500', marginBottom: 6 },
-  cardMeta:           { flexDirection: 'row', gap: 8 },
-  metaChip:           { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  metaText:           { fontSize: 10, color: THEME.textMuted, fontWeight: '500' },
-  statusPill:         { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 7, paddingVertical: 4, borderRadius: 8 },
-  statusText:         { fontSize: 10, fontWeight: '700' },
-
-  // Rejected
-  rejectedBar:        { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: THEME.border },
-  rejectedText:       { fontSize: 11, color: THEME.danger, fontWeight: '600' },
-
-  // Empty state
-  emptyState:         { alignItems: 'center', marginTop: 60, paddingHorizontal: 32 },
-  emptyIcon:          { width: 72, height: 72, borderRadius: 20, backgroundColor: THEME.surfaceLow, justifyContent: 'center', alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: THEME.border },
-  emptyTitle:         { fontSize: 17, fontWeight: '700', color: THEME.text, marginBottom: 6 },
-  emptySub:           { fontSize: 13, color: THEME.textMuted, textAlign: 'center', lineHeight: 20 },
+  root: { flex: 1, backgroundColor: C.background },
+  safeArea: { flex: 1 },
+  screenHeader: { paddingHorizontal: 24, marginTop: 20, marginBottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionLabel: { fontSize: 10, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 },
+  sectionTitle: { fontSize: 24, fontWeight: '600', color: C.onSurface, letterSpacing: -0.5 },
+  searchIconTap: { padding: 4 },
+  searchWrapper: { paddingHorizontal: 24, overflow: 'hidden' },
+  gallerySearchArea: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, borderRadius: 12, paddingHorizontal: 18, height: 52, borderWidth: 1, borderColor: C.outlineVar },
+  searchInput: { flex: 1, fontSize: 14, color: C.onSurface, height: '100%' },
+  tabsContainer: { flexDirection: 'row', paddingHorizontal: 24, marginBottom: 8, marginTop: 4, position: 'relative' },
+  tabItem: { paddingVertical: 14, paddingHorizontal: 16 },
+  tabLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5 },
+  tabLabelActive: { color: C.onSurface, fontWeight: '700' },
+  tabUnderline: { position: 'absolute', bottom: -1, left: 0, height: 3, backgroundColor: C.primary, borderRadius: 1.5 },
+  listContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },
+  cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVar, marginBottom: 16 }, 
+  cleanMotionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  cleanStagePill:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4 },
+  cleanStageText:    { fontSize: 10, fontWeight: '700', color: C.onSurface, letterSpacing: 1.5 },
+  cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.0 },
+  cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 8 },
+  cleanRoleText:     { fontSize: 26, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, marginBottom: 24 }, 
+  cleanActionRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cleanDurationBox:  { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  cleanDurationText: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5 },
+  cleanJoinBtn:      { flexDirection: 'row', alignItems: 'center', backgroundColor: C.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100, gap: 8 },
+  cleanJoinBtnText:  { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 1.5 },
+  emptyView: { alignItems: 'center', marginTop: 100, paddingHorizontal: 40 },
+  emptyLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, marginBottom: 24 },
 });

@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform, Animated, Easing } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -16,111 +16,159 @@ import ApplyFlowScreen from '../screens/main/ApplyFlowScreen';
 import ApplicationsScreen from '../screens/main/ApplicationsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const NAV = {
-  primary:     '#1e3a5f', // Navy Indigo (Atelier)
+  primary:     '#1e3a5f', // Navy Indigo
   inactive:    '#94a3b8', // Slate clean
   background:  '#F7F9FB', // Surface Bright
+  pill:        'rgba(30, 58, 95, 0.08)', // Tonal liquid background
 };
 
-// ─── Tab icon with high-density minimal styling ──────────────────────────────
-function TabIcon({ name, focused, badge }: { name: string; focused: boolean; badge?: number }) {
+// ─── Custom Tab Bar (Liquid Matte Slider - Native Animated) ─────────────────
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const tabWidth = (SCREEN_WIDTH - 32) / state.routes.length;
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(translateX, {
+      toValue: state.index * tabWidth,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+    }).start();
+  }, [state.index]);
+
   return (
-    <View style={tabStyles.iconWrapper}>
-      <MaterialCommunityIcons
-        name={name as any}
-        size={22}
-        color={focused ? NAV.primary : NAV.inactive}
-      />
-      {badge !== undefined && badge > 0 && (
-        <View style={tabStyles.badge}>
-          <Text style={tabStyles.badgeText}>{badge}</Text>
+    <View style={tabStyles.container}>
+      <BlurView intensity={80} tint="light" style={tabStyles.blurBackground}>
+        <View style={tabStyles.inner}>
+          {/* Animated Liquid Pill */}
+          <Animated.View 
+            style={[
+              tabStyles.pill, 
+              { width: tabWidth, transform: [{ translateX }] }
+            ]} 
+          />
+
+          {/* Tab Buttons */}
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+
+            const onPress = () => {
+              const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
+            };
+
+            const iconName = (() => {
+              if (route.name === 'Home') return isFocused ? 'view-grid' : 'view-grid-outline';
+              if (route.name === 'Search') return 'magnify';
+              if (route.name === 'Applications') return isFocused ? 'file-document' : 'file-document-outline';
+              if (route.name === 'Profile') return isFocused ? 'account' : 'account-outline';
+              return 'help-circle-outline';
+            })();
+
+            return (
+              <TouchableOpacity
+                key={route.key}
+                onPress={onPress}
+                activeOpacity={1}
+                style={tabStyles.tabItem}
+              >
+                <TabIcon name={iconName} focused={isFocused} />
+              </TouchableOpacity>
+            );
+          })}
         </View>
-      )}
+      </BlurView>
     </View>
   );
 }
 
-const tabStyles = StyleSheet.create({
-  iconWrapper: { alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  badge:       { position: 'absolute', top: -4, right: -6, backgroundColor: '#9e3f4e', // Archive error red
-                 minWidth: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center',
-                 borderWidth: 1.5, borderColor: '#F7F9FB' },
-  badgeText:   { fontSize: 7, fontWeight: '900', color: '#FFF' },
-});
+function TabIcon({ name, focused }: { name: string; focused: boolean }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(0.6)).current;
 
-function CustomTabBarBackground() {
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: focused ? 1.15 : 1,
+        useNativeDriver: true,
+        friction: 5,
+      }),
+      Animated.timing(opacity, {
+        toValue: focused ? 1 : 0.6,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, [focused]);
+
   return (
-    <BlurView 
-      intensity={60} 
-      tint="light" 
-      style={[StyleSheet.absoluteFill, { borderRadius: 40, overflow: 'hidden' }]} 
-    />
+    <Animated.View style={[tabStyles.iconWrapper, { transform: [{ scale }], opacity }]}>
+      <MaterialCommunityIcons name={name as any} size={24} color={focused ? NAV.primary : NAV.inactive} />
+      {focused && <View style={tabStyles.activeIndicator} />}
+    </Animated.View>
   );
 }
 
-// ─── Main Tabs ────────────────────────────────────────────────────────────────
+const tabStyles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 24,
+    left: 16,
+    right: 16,
+    height: 64,
+    borderRadius: 32,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+  },
+  blurBackground: { ...StyleSheet.absoluteFillObject },
+  inner: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  tabItem: { flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center' },
+  pill: {
+    position: 'absolute',
+    height: '100%',
+    backgroundColor: NAV.pill,
+    borderRadius: 32,
+  },
+  iconWrapper: { alignItems: 'center', justifyContent: 'center' },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: -8,
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: NAV.primary,
+  },
+});
+
+// ─── Navigator ────────────────────────────────────────────────────────────────
 function MainTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused }) => {
-          let iconName = 'help-circle-outline';
-          if (route.name === 'Home') iconName = focused ? 'view-grid' : 'view-grid-outline';
-          else if (route.name === 'Search') iconName = focused ? 'magnify' : 'magnify';
-          else if (route.name === 'Applications') iconName = focused ? 'file-document' : 'file-document-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'account' : 'account-outline';
-          const badge = route.name === 'Applications' ? 2 : undefined;
-          return <TabIcon name={iconName} focused={focused} badge={badge} />;
-        },
-        tabBarShowLabel: true,
-        tabBarActiveTintColor: NAV.primary,
-        tabBarInactiveTintColor: NAV.inactive,
-        tabBarLabelStyle: {
-          fontSize: 8,
-          fontWeight: '800',
-          letterSpacing: 2,
-          marginTop: 2,
-          textTransform: 'uppercase',
-        },
-        tabBarBackground: CustomTabBarBackground,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 40,
-          left: 60,
-          right: 60,
-          height: 64,
-          paddingBottom: 10,
-          paddingTop: 8,
-          backgroundColor: 'rgba(255,255,255,0.75)',
-          borderTopWidth: 0,
-          borderRadius: 40,
-          elevation: 0,
-          shadowColor: '#2a3439',
-          shadowOffset: { width: 0, height: 16 },
-          shadowOpacity: 0.18,
-          shadowRadius: 40,
-          borderWidth: 1.5,
-          borderColor: 'rgba(255,255,255,0.95)',
-        },
-        tabBarItemStyle: {
-          paddingTop: 4,
-        },
-      })}
+      tabBar={props => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen name="Home" component={HomeFeedScreen} options={{ title: 'Discover' }} />
-      <Tab.Screen name="Search" component={JobSearchScreen} options={{ title: 'Search' }} />
-      <Tab.Screen name="Applications" component={ApplicationsScreen} options={{ title: 'Applied' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Tab.Screen name="Home" component={HomeFeedScreen} />
+      <Tab.Screen name="Search" component={JobSearchScreen} />
+      <Tab.Screen name="Applications" component={ApplicationsScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
 
-// ─── App Navigator ────────────────────────────────────────────────────────────
 export default function AppNavigator() {
   return (
     <SafeAreaProvider>

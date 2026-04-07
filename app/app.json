@@ -6,17 +6,19 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/images/minimal_splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F4C5C"
+      "backgroundColor": "#F3F3F3"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0F4C5C"
+        "backgroundColor": "#F3F3F3"
       },
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "package": "com.hitesh_mehta.hireviamobile"
     },
     "web": {
       "bundler": "metro"
@@ -25,6 +27,11 @@
       "expo-asset",
       "expo-font"
     ],
-    "newArchEnabled": true
+    "extra": {
+      "eas": {
+        "projectId": "3a022cb1-109f-42d9-9f39-35e25f4d820a"
+      }
+    },
+    "owner": "hitesh_mehta"
   }
 }

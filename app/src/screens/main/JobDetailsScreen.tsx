@@ -1,23 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+const matteCover = require('../../../assets/images/matte_cover.png');
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-// ─── Design System ────────────────────────────────────────────────────────────
-const THEME = {
-  primary:        '#4F46E5',
-  primaryLight:   '#EEF2FF',
-  secondary:      '#06B6D4',
-  background:     '#F8FAFC',
-  surface:        '#FFFFFF',
-  surfaceLow:     '#F1F5F9',
-  text:           '#111827',
-  textMuted:      '#6B7280',
-  textSubtle:     '#9CA3AF',
-  border:         '#E5E7EB',
-  success:        '#22C55E',
-  successLight:   '#F0FDF4',
+// ─── Editorial Theme (From Screenshot) ──────────────────────────────────────────
+const T = {
+  bgWhite: '#FFFFFF',
+  bgGray: '#F7F8F9', // The subtle gray block for requirements
+  textMain: '#1A1D2B', // Deep, almost black navy
+  textP: '#6A7287', // Muted slate gray for paragraphs
+  textMuted: '#9CA3AF',
+  accentDark: '#3A4468', // The dark slate-indigo for buttons and icons
+  accentLight: '#687193', // Lighter slate for labels like "ABOUT THE ROLE"
+  border: '#EAEBEE',
+};
+
+// ─── Dynamic Image Helper ───────────────────────────────────────────────────────
+const getJobCoverImage = (title: string, company: string = '') => {
+  const t = title.toLowerCase();
+  const c = company.toLowerCase();
+  if (t.includes('design') || t.includes('ux') || t.includes('ui') || t.includes('visual') || c.includes('studio')) {
+    return 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('develop') || t.includes('engineer') || t.includes('software') || t.includes('architect')) {
+    return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('market') || t.includes('strateg') || t.includes('product') || t.includes('manager')) {
+    return 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('data') || t.includes('analy') || t.includes('finance')) {
+    return 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80';
+  }
+  const fallbacks = [
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80',
+  ];
+  const hash = company.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 1;
+  return fallbacks[hash % fallbacks.length];
 };
 
 export default function JobDetailsScreen() {
@@ -28,153 +50,154 @@ export default function JobDetailsScreen() {
   if (!job) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.headerBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={20} color={THEME.text} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+            <Ionicons name="arrow-back" size={22} color={T.textMain} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.errorText}>Job data not found.</Text>
+        <Text style={styles.errorText}>Narrative not found.</Text>
       </SafeAreaView>
     );
   }
 
-  const skills: string[] = job.tags || job.skills || [];
+  // Fallbacks for data to precisely match the layout
+  const salary = job.salary || '£85k - £110k';
+  const location = job.location || 'London, UK';
+  const type = job.type || 'Full-time';
+  const company = job.company || 'Studio Arkhos';
+  const skills = job.tags || job.skills || ['Develop multi-channel creative strategies for global projects.', 'Collaborate with Architects to ensure brand alignment.', 'Oversee visual production from mood-board to execution.'];
+  
+  // Premium matte AI-generated cover for the details hero
+  const coverImage = matteCover;
+  
+  // Dynamic company metadata
+  const companyCategory = (Array.isArray(job.tags) && job.tags.length > 0) ? job.tags[0].toUpperCase() : 'INNOVATIVE AGENCY';
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header bar */}
-      <View style={styles.headerBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={20} color={THEME.text} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
+      
+      {/* ─── Minimal Nav Bar ─── */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <Ionicons name="arrow-back" size={24} color={T.textMain} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bookmarkBtn}>
-          <Ionicons name="bookmark-outline" size={20} color={THEME.textMuted} />
+        <TouchableOpacity style={styles.iconBtn}>
+          <Ionicons name="share-social-outline" size={22} color={T.textMain} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Company hero */}
-        <View style={styles.hero}>
-          <View style={styles.companyLogoWrapper}>
-            <Text style={styles.companyLogoText}>{(job.company || 'C').charAt(0)}</Text>
-          </View>
-          <Text style={styles.jobTitle}>{job.title}</Text>
-          <Text style={styles.companyName}>{job.company}</Text>
-
-          {/* Meta chips */}
-          <View style={styles.metaRow}>
-            {[
-              { icon: 'location-outline', text: job.location },
-              { icon: 'time-outline', text: job.type || 'Full-time' },
-              job.salary && { icon: 'cash-outline', text: job.salary },
-            ].filter(Boolean).map((m: any, i) => (
-              <View key={i} style={styles.metaChip}>
-                <Ionicons name={m.icon} size={13} color={THEME.textMuted} />
-                <Text style={styles.metaText}>{m.text}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Match badge */}
-          {job.matchScore && (
-            <View style={styles.matchBadge}>
-              <Ionicons name="flash" size={13} color={THEME.success} />
-              <Text style={styles.matchText}>{job.matchScore}% profile match</Text>
-            </View>
-          )}
+        
+        {/* ─── Hero Image ─── */}
+        <View style={styles.paddingH}>
+            <Image source={coverImage} style={styles.heroImage} />
         </View>
 
-        {/* Stats row */}
-        <View style={styles.statsRow}>
-          {[
-            { label: 'Experience', value: '3-5 yrs', icon: 'briefcase-outline' },
-            { label: 'Team size', value: '20-50', icon: 'people-outline' },
-            { label: 'Posted', value: '2 days ago', icon: 'calendar-outline' },
-          ].map((s, i) => (
-            <View key={i} style={styles.statItem}>
-              <View style={styles.statIcon}>
-                <Ionicons name={s.icon as any} size={16} color={THEME.primary} />
-              </View>
-              <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.statLabel}>{s.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Skills required */}
-        {skills.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Skills Required</Text>
-            <View style={styles.skillsRow}>
-              {skills.map((s, i) => (
-                <View key={i} style={styles.skillBadge}>
-                  <Text style={styles.skillText}>{s}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* About the role */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About the Role</Text>
-          <Text style={styles.paragraph}>
-            {job.description ||
-              `As a ${job.title} at ${job.company}, you will play a key role in delivering high-quality work that has real impact on our business and users. You'll collaborate with a world-class team and work on meaningful challenges every day.`}
+        {/* ─── Title & Meta ─── */}
+        <View style={[styles.paddingH, styles.titleSection]}>
+          <Text style={styles.jobTitle}>{job.title || 'Senior Creative Strategist'}</Text>
+          <Text style={styles.subtitleRow}>
+            {company}  <Text style={styles.dot}>•</Text>  {location}  <Text style={styles.dot}>•</Text>  {type}
           </Text>
         </View>
 
-        {/* Requirements */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Requirements</Text>
-          {[
-            `${skills[0] || 'Relevant experience'} proficiency required`,
-            'Strong communication and collaboration skills',
-            'Ability to work in a fast-paced environment',
-            'Portfolio or work samples preferred',
-          ].map((req, i) => (
-            <View key={i} style={styles.requirementRow}>
-              <View style={styles.requirementDot} />
-              <Text style={styles.requirementText}>{req}</Text>
+        {/* ─── Metrics Divider Row ─── */}
+        <View style={styles.paddingH}>
+            <View style={styles.metricsRow}>
+            <View style={styles.metricBlock}>
+                <Text style={styles.metricLabel}>SALARY</Text>
+                <Text style={styles.metricValue}>{salary}</Text>
             </View>
-          ))}
+            <View style={styles.metricDivider} />
+            <View style={styles.metricBlock}>
+                <Text style={styles.metricLabel}>TEAM</Text>
+                <Text style={styles.metricValue}>20-50</Text>
+            </View>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricBlock}>
+                <Text style={styles.metricLabel}>POSTED</Text>
+                <Text style={styles.metricValue}>2 days ago</Text>
+            </View>
+            </View>
         </View>
 
-        {/* Benefits */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What we offer</Text>
-          <View style={styles.benefitsGrid}>
-            {[
-              { icon: 'home-outline', text: 'Remote Friendly' },
-              { icon: 'medkit-outline', text: 'Health Benefits' },
-              { icon: 'school-outline', text: 'Learning Budget' },
-              { icon: 'airplane-outline', text: 'Paid Time Off' },
-            ].map((b, i) => (
-              <View key={i} style={styles.benefitCard}>
-                <View style={styles.benefitIcon}>
-                  <Ionicons name={b.icon as any} size={18} color={THEME.primary} />
-                </View>
-                <Text style={styles.benefitText}>{b.text}</Text>
+        {/* ─── About Segment ─── */}
+        <View style={[styles.paddingH, styles.aboutSection]}>
+          <Text style={styles.sectionLabel}>ABOUT THE ROLE</Text>
+          <Text style={styles.bodyText}>
+            {job.description || 
+             "As our Senior Creative Strategist, you will sit at the intersection of architectural precision and narrative storytelling. Studio Arkhos is seeking a visionary who can translate complex structural concepts into evocative digital experiences.\n\nYou will lead a small, high-performance team to bridge the gap between our design principles and client expectations."}
+          </Text>
+        </View>
+
+        {/* ─── Full-Bleed Gray Background Section ─── */}
+        <View style={styles.grayBleed}>
+          <View style={styles.paddingH}>
+              
+              {/* Responsibilities */}
+              <Text style={styles.sectionLabel}>RESPONSIBILITIES</Text>
+              <View style={styles.listContainer}>
+                {skills.map((skill: string, i: number) => (
+                  <View key={i} style={styles.listItem}>
+                    <Ionicons name="checkmark-circle" size={18} color={T.accentDark} style={styles.listIcon} />
+                    <Text style={styles.listText}>{skill}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+
+              {/* Offerings */}
+              <Text style={[styles.sectionLabel, { marginTop: 32 }]}>WHAT WE OFFER</Text>
+              <View style={styles.listContainer}>
+                {[
+                  'Access to our private rooftop studio.',
+                  'Bi-annual international design residency programs.',
+                ].map((offer, i) => (
+                  <View key={i} style={styles.listItem}>
+                    <Ionicons name="star" size={16} color={T.accentDark} style={styles.listIcon} />
+                    <Text style={styles.listText}>{offer}</Text>
+                  </View>
+                ))}
+              </View>
+
           </View>
+        </View>
+
+        {/* ─── Company Footer Block ─── */}
+        <View style={[styles.paddingH, styles.companySection]}>
+          <View style={styles.companyHeaderRow}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>{company.charAt(0).toUpperCase()}</Text>
+            </View>
+            <View style={styles.companyTitleBox}>
+              <Text style={styles.companyNameText}>{company}</Text>
+              <Text style={styles.companyCategoryText}>{companyCategory}</Text>
+            </View>
+            <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <Text style={styles.portfolioText}>PORTFOLIO</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.companyBlurb}>
+            Join the {company} team to build the future. We're looking for passionate individuals to join our {location} office and drive innovation.
+          </Text>
         </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Sticky bottom CTA */}
+      {/* ─── Bottom Actions ─── */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.saveBtn} onPress={() => {}}>
-          <Ionicons name="bookmark-outline" size={20} color={THEME.primary} />
-        </TouchableOpacity>
         <TouchableOpacity
           style={styles.applyBtn}
-          activeOpacity={0.85}
+          activeOpacity={0.8}
           onPress={() => navigation.navigate('ApplyFlow', { job })}
         >
-          <Text style={styles.applyBtnText}>Apply Now</Text>
-          <Ionicons name="arrow-forward" size={18} color="#FFF" />
+          <Text style={styles.applyBtnText}>Apply for this Role</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.bookmarkBtn}>
+          <Ionicons name="bookmark" size={18} color={T.textMain} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -183,62 +206,235 @@ export default function JobDetailsScreen() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: THEME.background },
-
+  container: { 
+    flex: 1, 
+    backgroundColor: T.bgWhite 
+  },
+  paddingH: {
+    paddingHorizontal: 20,
+  },
+  
   // Header
-  headerBar:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 4, paddingBottom: 8 },
-  backBtn:            { width: 40, height: 40, borderRadius: 12, backgroundColor: THEME.surface, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: THEME.border, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
-  bookmarkBtn:        { width: 40, height: 40, borderRadius: 12, backgroundColor: THEME.surface, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: THEME.border },
-  errorText:          { textAlign: 'center', marginTop: 120, color: THEME.textMuted, fontSize: 16 },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 20, 
+    paddingVertical: 12,
+    backgroundColor: T.bgWhite,
+  },
+  iconBtn: { 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    width: 32,
+    height: 32,
+  },
+  errorText: { 
+    textAlign: 'center', 
+    marginTop: 120, 
+    color: T.textMuted, 
+    fontSize: 16 
+  },
 
-  // Scroll
-  scrollContent:      { paddingHorizontal: 20, paddingTop: 8 },
+  scrollContent: { 
+    paddingTop: 8,
+  },
 
   // Hero
-  hero:               { alignItems: 'flex-start', marginBottom: 24 },
-  companyLogoWrapper: { width: 60, height: 60, borderRadius: 16, backgroundColor: THEME.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 16, shadowColor: THEME.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
-  companyLogoText:    { fontSize: 24, fontWeight: '800', color: '#FFF' },
-  jobTitle:           { fontSize: 24, fontWeight: '800', color: THEME.text, letterSpacing: -0.5, marginBottom: 4 },
-  companyName:        { fontSize: 15, fontWeight: '600', color: THEME.primary, marginBottom: 14 },
-  metaRow:            { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  metaChip:           { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: THEME.surface, borderWidth: 1, borderColor: THEME.border },
-  metaText:           { fontSize: 12, color: THEME.textMuted, fontWeight: '500' },
-  matchBadge:         { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: THEME.successLight, borderWidth: 1, borderColor: THEME.success + '30' },
-  matchText:          { fontSize: 12, color: THEME.success, fontWeight: '700' },
+  heroImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 24,
+    backgroundColor: T.bgGray,
+  },
 
-  // Stats
-  statsRow:           { flexDirection: 'row', backgroundColor: THEME.surface, borderRadius: 16, borderWidth: 1, borderColor: THEME.border, marginBottom: 24, overflow: 'hidden' },
-  statItem:           { flex: 1, alignItems: 'center', paddingVertical: 14, borderRightWidth: 1, borderRightColor: THEME.border },
-  statIcon:           { width: 32, height: 32, borderRadius: 8, backgroundColor: THEME.primaryLight, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
-  statValue:          { fontSize: 13, fontWeight: '700', color: THEME.text, marginBottom: 2 },
-  statLabel:          { fontSize: 10, color: THEME.textSubtle, fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.3 },
+  // Titles
+  titleSection: {
+    marginBottom: 24,
+  },
+  jobTitle: { 
+    fontSize: 32, 
+    fontWeight: '800', 
+    color: T.textMain, 
+    letterSpacing: -0.5, 
+    marginBottom: 8,
+    lineHeight: 38,
+  },
+  subtitleRow: {
+    fontSize: 14,
+    color: T.textP,
+    fontWeight: '500',
+  },
+  dot: {
+    color: '#D1D5DB',
+  },
 
-  // Sections
-  section:            { marginBottom: 24 },
-  sectionTitle:       { fontSize: 16, fontWeight: '700', color: THEME.text, marginBottom: 12, letterSpacing: -0.2 },
+  // Metrics
+  metricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: T.border,
+    paddingVertical: 16,
+    marginBottom: 32,
+  },
+  metricBlock: {
+    flex: 1,
+  },
+  metricDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: T.border,
+    marginHorizontal: 16,
+  },
+  metricLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: T.textMuted,
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  metricValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: T.textMain,
+  },
 
-  // Skills
-  skillsRow:          { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-  skillBadge:         { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: THEME.primaryLight, borderWidth: 1, borderColor: THEME.primary + '25' },
-  skillText:          { fontSize: 12, fontWeight: '700', color: THEME.primary },
+  // Section Typography
+  aboutSection: {
+    marginBottom: 32,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: T.accentLight,
+    letterSpacing: 1.5,
+    marginBottom: 16,
+  },
+  bodyText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: T.textP,
+    fontWeight: '400',
+  },
 
-  // Paragraph
-  paragraph:          { fontSize: 14, lineHeight: 22, color: '#4B5563', fontWeight: '400' },
+  // Gray Bleed Block
+  grayBleed: {
+    backgroundColor: T.bgGray,
+    paddingVertical: 32,
+    width: '100%',
+  },
+  listContainer: {
+    gap: 16,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  listIcon: {
+    marginTop: 2,
+    marginRight: 10,
+  },
+  listText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 22,
+    color: T.textP,
+    fontWeight: '400',
+  },
 
-  // Requirements
-  requirementRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
-  requirementDot:     { width: 5, height: 5, borderRadius: 3, backgroundColor: THEME.primary, marginTop: 7, flexShrink: 0 },
-  requirementText:    { flex: 1, fontSize: 14, color: THEME.textMuted, lineHeight: 20 },
+  // Company Footer
+  companySection: {
+    paddingVertical: 32,
+  },
+  companyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logoBox: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#000000',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    color: '#D4AF37', 
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  companyTitleBox: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  companyNameText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: T.textMain,
+    marginBottom: 2,
+  },
+  companyCategoryText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: T.textMuted,
+    letterSpacing: 1,
+  },
+  portfolioText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: T.accentDark,
+    letterSpacing: 1,
+  },
+  companyBlurb: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: T.textP,
+  },
 
-  // Benefits
-  benefitsGrid:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  benefitCard:        { width: '47%', backgroundColor: THEME.surface, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: THEME.border, alignItems: 'flex-start', gap: 8 },
-  benefitIcon:        { width: 36, height: 36, borderRadius: 10, backgroundColor: THEME.primaryLight, justifyContent: 'center', alignItems: 'center' },
-  benefitText:        { fontSize: 12, fontWeight: '600', color: THEME.text },
-
-  // Bottom bar
-  bottomBar:          { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 32, backgroundColor: THEME.surface, borderTopWidth: 1, borderTopColor: THEME.border },
-  saveBtn:            { width: 48, height: 48, borderRadius: 14, backgroundColor: THEME.primaryLight, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: THEME.primary + '30' },
-  applyBtn:           { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: THEME.primary, paddingVertical: 14, borderRadius: 14, shadowColor: THEME.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
-  applyBtnText:       { color: '#FFF', fontSize: 16, fontWeight: '700', letterSpacing: -0.2 },
+  // Bottom Fixed Bar
+  bottomBar: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    gap: 16, 
+    paddingHorizontal: 20, 
+    paddingVertical: 16, 
+    backgroundColor: '#FFFFFF', // explicitly white
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  applyBtn: { 
+    flex: 1, 
+    backgroundColor: '#000000',
+    paddingVertical: 16, 
+    borderRadius: 100, // Pill-shaped like the rest of the app's CTAs
+    alignItems: 'center',
+  },
+  applyBtnText: { 
+    color: T.bgWhite, 
+    fontSize: 14, 
+    fontWeight: '600', 
+  },
+  bookmarkBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: T.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: T.bgWhite,
+  }
 });
