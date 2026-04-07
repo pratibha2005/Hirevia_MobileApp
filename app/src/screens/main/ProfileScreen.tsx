@@ -107,7 +107,7 @@ export default function ProfileScreen() {
              <View style={styles.heroSection}>
                 <View style={styles.haloContainer}>
                    <LinearGradient 
-                      colors={['#CBD5E1', '#94A3B8']} // Graphite Monochrome Halo
+                      colors={['#D1D1D1', '#7A7A7A']} // Pure Monochrome Halo
                       style={styles.haloRing}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   ghostChip: { backgroundColor: C.surfaceLow, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
   ghostChipText: { fontSize: 11, fontWeight: '800', color: C.onSurface, letterSpacing: 0.8 },
 
-  assetCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, padding: 16, borderRadius: 24, borderWidth: 1, borderColor: C.outline },
+  assetCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, padding: 16, borderRadius: 24, shadowColor: '#000', shadowOffset: { width:0, height:2 }, shadowOpacity:0.02, shadowRadius:4 },
   assetIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.background, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
   assetTitle: { fontSize: 14, fontWeight: '700', color: C.onSurface },
   assetMeta: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 1, marginTop: 2 },

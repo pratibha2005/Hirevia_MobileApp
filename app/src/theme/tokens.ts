@@ -11,8 +11,8 @@ export const PALETTE = {
   surfaceContLow:  '#F0F4F7', // Sub-structural grey
   surfaceContHigh: '#E1E9EE', // Deep structural grey
   
-  // Signature Accent (Indigo Slate)
-  primary:         '#4E5A9A', 
+  // Signature Accent (Strict Monochrome)
+  primary:         '#1A1A1A', // Matte Black
   primaryText:     '#FFFFFF',
   
   // Text & Content
@@ -21,9 +21,9 @@ export const PALETTE = {
   outline:         '#717C82', // Standard stroke
   outlineVariant:  '#A9B4B9', // Faded stroke
   
-  // Semantic
-  error:           '#9E3F4E', // Muted Red
-  indigo900:       '#1E3A5F', // Editorial Deep Navy
+  // Semantic (Monochromatic)
+  error:           '#000000', // Strict Black
+  indigo900:       '#1A1A1A', // Editorial Matte Black
 };
 
 export const TYPOGRAPHY = {
