@@ -116,10 +116,67 @@ function ApplicationItemCard({ item, index }: { item: any; index: number }) {
   );
 }
 
+// ─── Interview Item Card ──────────────────────────────────────────────────
+function InterviewItemCard({ item, index }: { item: any; index: number }) {
+  const companyName = item.companyId?.name || 'Unknown Studio';
+  const jobTitle = item.jobTitle || 'Role Interview';
+  
+  const scale = useRef(new Animated.Value(1)).current;
+  const onPressIn = () => Animated.spring(scale, { toValue: 0.98, useNativeDriver: true }).start();
+  const onPressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+
+  return (
+    <FadeIn delay={index * 50}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Pressable 
+           onPressIn={onPressIn}
+           onPressOut={onPressOut}
+           style={[styles.cleanMotionCard, { borderColor: C.primary, borderWidth: 1 }]} 
+        >
+          <View style={styles.cleanMotionHeaderRow}>
+             <View style={[styles.cleanStagePill, { backgroundColor: C.matteForest }]}>
+               <Text style={[styles.cleanStageText, { color: C.surface }]}>SCHEDULED</Text>
+             </View>
+             <Text style={styles.cleanDateText}>{item.interviewDate}</Text>
+          </View>
+
+          <Text style={styles.cleanCompanyText}>{companyName}</Text>
+          <Text style={styles.cleanRoleText}>{jobTitle}</Text>
+          
+          <View style={[styles.cleanActionRow, { marginTop: 12 }]}>
+             <View style={styles.cleanDurationBox}>
+                <Ionicons name="time-outline" size={14} color={C.onSurface} strokeWidth={2} />
+                <Text style={[styles.cleanDurationText, { color: C.onSurface, fontWeight: '700' }]}>{item.startTime} — {item.endTime}</Text>
+             </View>
+             <View style={styles.cleanDurationBox}>
+                <Ionicons name="videocam-outline" size={14} color={C.onSurfaceVariant} />
+                <Text style={styles.cleanDurationText}>{item.mode}</Text>
+             </View>
+          </View>
+
+          {item.meetingLink ? (
+            <TouchableOpacity 
+              style={[styles.cleanJoinBtn, { marginTop: 24, alignSelf: 'flex-start' }]}
+              onPress={() => {
+                // In a real app, use Linking.openURL
+                console.log('Opening meeting link:', item.meetingLink);
+              }}
+            >
+               <Ionicons name="link-outline" size={14} color="#FFF" />
+               <Text style={styles.cleanJoinBtnText}>JOIN MEETING</Text>
+            </TouchableOpacity>
+          ) : null}
+        </Pressable>
+      </Animated.View>
+    </FadeIn>
+  );
+}
+
 // ─── Main Screen ────────────────────────────────────────────────────────────────
 export default function ApplicationsScreen() {
   const navigation = useNavigation<any>();
   const [applications, setApplications] = useState<any[]>(DUMMY_APPLICATIONS);
+  const [interviews, setInterviews] = useState<any[]>([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -161,25 +218,36 @@ export default function ApplicationsScreen() {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const res = await fetch(`${API_BASE_URL}/api/applications/my`, {
+        // 📦 Fetch Applications
+        const appRes = await fetch(`${API_BASE_URL}/api/applications/my`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
-        if (data.success && data.applications?.length > 0) {
-          setApplications(data.applications);
+        const appData = await appRes.json();
+        if (appData.success) {
+          setApplications(appData.applications || []);
+        }
+
+        // 🗓️ Fetch Interviews
+        const intRes = await fetch(`${API_BASE_URL}/api/interviews/my`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const intData = await intRes.json();
+        if (intData.success) {
+          setInterviews(intData.interviews || []);
         }
       }
-    } catch (e) { console.log('Failed to fetch applications'); }
+    } catch (e) { console.log('Failed to fetch data'); }
     finally { setLoading(false); setRefreshing(false); }
   };
 
   useFocusEffect(useCallback(() => { fetchApplications(); }, []));
 
-  let filtered = applications;
+  let filtered: any[] = applications;
   if (activeFilter === 'Active') {
     filtered = applications.filter(a => !['Rejected', 'Hired', 'Offer'].includes(a.status));
   } else if (activeFilter === 'Interviews') {
-    filtered = applications.filter(a => ['Interview'].includes(a.status));
+    // If interviews tab is active, we prioritize the scheduled interviews
+    filtered = interviews.length > 0 ? interviews : applications.filter(a => a.status === 'Interview');
   } else if (activeFilter === 'Archived') {
     filtered = applications.filter(a => ['Rejected', 'Hired', 'Offer'].includes(a.status));
   }
@@ -258,7 +326,11 @@ export default function ApplicationsScreen() {
           <FlatList
             data={filtered}
             keyExtractor={(item) => item._id}
-            renderItem={({ item, index }) => <ApplicationItemCard item={item} index={index} />}
+            renderItem={({ item, index }) => 
+              activeFilter === 'Interviews' && item.interviewDate 
+                ? <InterviewItemCard item={item} index={index} />
+                : <ApplicationItemCard item={item} index={index} />
+            }
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
             refreshControl={

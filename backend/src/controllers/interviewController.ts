@@ -214,3 +214,21 @@ export const updateInterview = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// GET /api/interviews/my — APPLICANT sees their own scheduled interviews
+export const getMyInterviews = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findById(req.user!.userId).select('email');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const interviews = await Interview.find({ candidateEmail: user.email.toLowerCase() })
+            .populate('companyId', 'name logoUrl')
+            .sort({ interviewDate: 1, startTime: 1 });
+
+        return res.json({ success: true, interviews });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
