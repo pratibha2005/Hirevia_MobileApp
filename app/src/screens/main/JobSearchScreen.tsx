@@ -164,11 +164,11 @@ export default function JobSearchScreen() {
       const data = await res.json();
       if (data.success) {
         setJobs(data.jobs.map((j: any) => {
-          // 🖼️ Priority: Company Logo > HR Profile Image > Stock Fallback
+          // 🖼️ Priority: Job Logo (Company Logo or HR Avatar)
           const rawLogo = j.companyId?.logoUrl || j.postedById?.profileImage;
           const logo = rawLogo 
             ? (rawLogo.startsWith('http') ? rawLogo : `${API_BASE_URL}${rawLogo}`) 
-            : getJobImage(j.title, j.companyId?.name);
+            : undefined;
 
           // 👤 Normalize HR Profile Image if it exists
           const postedBy = j.postedById ? {

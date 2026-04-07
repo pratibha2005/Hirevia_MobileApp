@@ -16,7 +16,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
@@ -143,11 +143,11 @@ export default function HomeFeedScreen() {
       const jobData = await jobRes.json();
       if (jobData.success) {
         const jobList = jobData.jobs.map((j: any) => {
-          // 🖼️ Priority: Company Logo > HR Profile Image > Stock Fallback
+          // 🖼️ Priority: Job Logo (Company Logo or HR Avatar)
           const rawLogo = j.companyId?.logoUrl || j.postedById?.profileImage;
           const logo = rawLogo 
             ? (rawLogo.startsWith('http') ? rawLogo : `${API_BASE_URL}${rawLogo}`) 
-            : getJobImage(j.title, j.companyId?.name);
+            : undefined;
 
           // 👤 Normalize HR Profile Image if it exists
           const postedBy = j.postedById ? {
@@ -288,7 +288,17 @@ export default function HomeFeedScreen() {
                       }}
                     >
                       <View style={styles.imageContainer}>
-                        <Image source={{ uri: item.logo }} style={styles.jobImage} />
+                        {item.logo ? (
+                          <Image source={{ uri: item.logo }} style={styles.jobImage} />
+                        ) : (
+                          <View style={[styles.jobImage, { backgroundColor: C.surfaceContLow, alignItems: 'center', justifyContent: 'center' }]}>
+                             <MaterialCommunityIcons 
+                                name={item.title.toLowerCase().includes('remote') ? 'earth' : 'briefcase-variant-outline'} 
+                                size={40} 
+                                color={C.primary} 
+                             />
+                          </View>
+                        )}
                         {item.postedBy?.profileImage && (
                           <View style={styles.hrBadge}>
                             <Image source={{ uri: item.postedBy.profileImage }} style={styles.hrAvatar} />
