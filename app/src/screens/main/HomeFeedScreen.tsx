@@ -142,18 +142,34 @@ export default function HomeFeedScreen() {
       const jobRes = await fetch(`${API_BASE_URL}/api/jobs`);
       const jobData = await jobRes.json();
       if (jobData.success) {
-        const jobList = jobData.jobs.map((j: any) => ({
-          id: j._id,
-          title: j.title,
-          description: j.description,
-          company: j.companyId?.name || 'Unknown Company',
-          location: j.location,
-          salary: j.salary || 'Salary not disclosed',
-          type: j.type || 'Full-time',
-          tags: j.skills || [],
-          logo: j.companyId?.logoUrl || getJobImage(j.title, j.companyId?.name),
-          postedBy: j.postedById || null,
-        }));
+        const jobList = jobData.jobs.map((j: any) => {
+          // 🖼️ Priority: Company Logo > HR Profile Image > Stock Fallback
+          const rawLogo = j.companyId?.logoUrl || j.postedById?.profileImage;
+          const logo = rawLogo 
+            ? (rawLogo.startsWith('http') ? rawLogo : `${API_BASE_URL}${rawLogo}`) 
+            : getJobImage(j.title, j.companyId?.name);
+
+          // 👤 Normalize HR Profile Image if it exists
+          const postedBy = j.postedById ? {
+            ...j.postedById,
+            profileImage: j.postedById.profileImage 
+              ? (j.postedById.profileImage.startsWith('http') ? j.postedById.profileImage : `${API_BASE_URL}${j.postedById.profileImage}`)
+              : undefined
+          } : null;
+
+          return {
+            id: j._id,
+            title: j.title,
+            description: j.description,
+            company: j.companyId?.name || 'Unknown Company',
+            location: j.location,
+            salary: j.salary || 'Salary not disclosed',
+            type: j.type || 'Full-time',
+            tags: j.skills || [],
+            logo,
+            postedBy,
+          };
+        });
         setJobs(jobList);
         setDynamicChart(CHART_DATA.map(d => ({ ...d, value: Math.min(1.0, d.value * (0.9 + Math.random() * 0.2) + (jobList.length / 100)) })));
       }

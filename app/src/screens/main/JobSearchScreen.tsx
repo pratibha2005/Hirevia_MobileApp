@@ -86,12 +86,8 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
       >
         <View style={styles.entryLeft}>
           <View style={styles.entryIconBox}>
-             {job.postedBy?.profileImage ? (
-                <Image source={{ uri: job.postedBy.profileImage.startsWith('http') ? job.postedBy.profileImage : `${API_BASE_URL}${job.postedBy.profileImage}` }} style={styles.entryHrAvatar} />
-             ) : job.logo?.startsWith('http') ? (
-                <Image source={{ uri: job.logo }} style={styles.entryHrAvatar} />
-             ) : job.logo ? (
-                <Image source={{ uri: `${API_BASE_URL}${job.logo}` }} style={styles.entryHrAvatar} />
+             {job.logo ? (
+                <Image source={{ uri: job.logo }} style={styles.entryHrAvatar} resizeMode="contain" />
              ) : (
                 <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
              )}
@@ -167,19 +163,35 @@ export default function JobSearchScreen() {
       const res = await fetch(`${API_BASE_URL}/api/jobs`);
       const data = await res.json();
       if (data.success) {
-        setJobs(data.jobs.map((j: any) => ({
-          id: j._id,
-          icon: j.type === 'Remote' ? 'earth' : 'briefcase-variant-outline',
-          title: j.title,
-          description: j.description,
-          logo: j.companyId?.logoUrl || getJobImage(j.title, j.companyId?.name),
-          company: j.companyId?.name || 'Studio Arkhos',
-          location: j.location,
-          salary: j.salary || '$120k — $150k',
-          type: j.type,
-          badge: j.isNew ? { label: 'NEW', type: 'new' } : undefined,
-          postedBy: j.postedById,
-        })));
+        setJobs(data.jobs.map((j: any) => {
+          // 🖼️ Priority: Company Logo > HR Profile Image > Stock Fallback
+          const rawLogo = j.companyId?.logoUrl || j.postedById?.profileImage;
+          const logo = rawLogo 
+            ? (rawLogo.startsWith('http') ? rawLogo : `${API_BASE_URL}${rawLogo}`) 
+            : getJobImage(j.title, j.companyId?.name);
+
+          // 👤 Normalize HR Profile Image if it exists
+          const postedBy = j.postedById ? {
+            ...j.postedById,
+            profileImage: j.postedById.profileImage 
+              ? (j.postedById.profileImage.startsWith('http') ? j.postedById.profileImage : `${API_BASE_URL}${j.postedById.profileImage}`)
+              : undefined
+          } : null;
+
+          return {
+            id: j._id,
+            icon: j.type === 'Remote' ? 'earth' : 'briefcase-variant-outline',
+            title: j.title,
+            description: j.description,
+            logo,
+            company: j.companyId?.name || 'Studio Arkhos',
+            location: j.location,
+            salary: j.salary || '$120k — $150k',
+            type: j.type,
+            badge: j.isNew ? { label: 'NEW', type: 'new' } : undefined,
+            postedBy,
+          };
+        }));
       }
     } catch (e) { console.error(e); } finally { setLoading(false); setRefreshing(false); }
   };
