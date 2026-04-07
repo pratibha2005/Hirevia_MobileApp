@@ -14,8 +14,8 @@ const STATUS_COLORS: Record<string, { label: string; accent: string; bg: string 
   'New':          { label: 'SENT',         accent: C.onSurface, bg: C.surfaceLow },
   'Under Review': { label: 'REVIEW',       accent: C.onSurface, bg: C.surfaceLow },
   'Shortlisted':  { label: 'MATCHED',      accent: C.onSurface, bg: C.surfaceLow },
-  'Interview':    { label: 'INTERVIEW',    accent: C.surface,   bg: C.primary },
-  'Offer':        { label: 'OFFER',        accent: C.surface,   bg: C.primary },
+  'Interview':    { label: 'INTERVIEW',    accent: C.surface,   bg: C.matteForest },
+  'Offer':        { label: 'OFFER',        accent: C.surface,   bg: C.matteTerracotta },
   'Hired':        { label: 'HIRED',        accent: C.surface,   bg: C.primary },
   'Rejected':     { label: 'CLOSED',       accent: C.onSurfaceVariant, bg: C.surfaceContLow },
 };

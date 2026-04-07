@@ -20,6 +20,9 @@ export const PALETTE = {
   matteSage:       '#D9E3D8', // Soft muted green
   matteClay:       '#E7DCD0', // Warm earthy tone
   matteSlate:      '#2D3436', // Deep matte night
+  matteForest:     '#2E3B33', // Deep organic green
+  matteTerracotta: '#B6785B', // Warm muted clay
+  matteDusk:       '#4A5568', // Warm deep slate
   
   // Text & Content
   onSurface:       '#1A1A1A', // Matte Black

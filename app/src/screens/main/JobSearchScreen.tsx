@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import SkeletonLoader from '../../components/SkeletonLoader';
 import {
   View,
   Text,
@@ -257,9 +258,19 @@ export default function JobSearchScreen() {
           <Text style={styles.sectionLabel}>RECENT ENTRIES</Text>
           <View style={styles.listContainer}>
             {loading ? (
-              <View style={{ alignItems: 'center', marginTop: 40 }}>
-                <LottieView source={require('../../../assets/animations/document_reader.json')} autoPlay loop style={{ width: 120, height: 120 }} />
-                <Text style={{ color: C.onSurfaceVariant, fontSize: 10, fontWeight: '900', letterSpacing: 2, marginTop: -10 }}>ANALYZING ARCHIVE</Text>
+              <View style={styles.listContainer}>
+                {[1, 2, 3].map(i => (
+                  <View key={i} style={[styles.entryTile, { backgroundColor: C.surfaceLow, marginBottom: 16 }]}>
+                    <View style={styles.entryLeft}>
+                       <SkeletonLoader width={40} height={40} borderRadius={12} />
+                       <View style={{ flex: 1, gap: 8 }}>
+                          <SkeletonLoader width={160} height={14} borderRadius={4} />
+                          <SkeletonLoader width={100} height={10} borderRadius={4} />
+                       </View>
+                    </View>
+                    <SkeletonLoader width={60} height={14} borderRadius={4} />
+                  </View>
+                ))}
               </View>
             ) : filteredJobs.length === 0 ? (
               <View style={{ padding: 40, alignItems: 'center' }}>
