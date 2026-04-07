@@ -41,6 +41,7 @@ interface JobEntry {
   badge?: { label: string; type: 'new' | 'closing' };
   type?: string;
   description: string;
+  logo?: string;
   postedBy?: {
     name: string;
     profileImage?: string;
@@ -78,6 +79,8 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
           <View style={styles.entryIconBox}>
              {job.postedBy?.profileImage ? (
                <Image source={{ uri: job.postedBy.profileImage }} style={styles.entryHrAvatar} />
+             ) : job.logo ? (
+                <Image source={{ uri: job.logo }} style={styles.entryHrAvatar} />
              ) : (
                <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
              )}
@@ -158,6 +161,7 @@ export default function JobSearchScreen() {
           icon: j.type === 'Remote' ? 'earth' : 'briefcase-variant-outline',
           title: j.title,
           description: j.description,
+          logo: j.companyId?.logoUrl, // 🏢 Map the company logo
           company: j.companyId?.name || 'Studio Arkhos',
           location: j.location,
           salary: j.salary || '$120k — $150k',
