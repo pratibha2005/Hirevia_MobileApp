@@ -40,6 +40,11 @@ interface JobEntry {
   salary: string;
   badge?: { label: string; type: 'new' | 'closing' };
   type?: string;
+  description: string;
+  postedBy?: {
+    name: string;
+    profileImage?: string;
+  };
 }
 
 // ─── Animated Job Row (Weightless Entrance) ──────────────────────────────────
@@ -71,7 +76,11 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
       >
         <View style={styles.entryLeft}>
           <View style={styles.entryIconBox}>
-             <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
+             {job.postedBy?.profileImage ? (
+               <Image source={{ uri: job.postedBy.profileImage }} style={styles.entryHrAvatar} />
+             ) : (
+               <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
+             )}
           </View>
           <View style={{ flex: 1 }}>
              <View style={styles.entryTitleRow}>
@@ -148,11 +157,13 @@ export default function JobSearchScreen() {
           id: j._id,
           icon: j.type === 'Remote' ? 'earth' : 'briefcase-variant-outline',
           title: j.title,
+          description: j.description,
           company: j.companyId?.name || 'Studio Arkhos',
           location: j.location,
           salary: j.salary || '$120k — $150k',
           type: j.type,
           badge: j.isNew ? { label: 'NEW', type: 'new' } : undefined,
+          postedBy: j.postedById,
         })));
       }
     } catch (e) { console.error(e); } finally { setLoading(false); setRefreshing(false); }
@@ -366,7 +377,8 @@ const styles = StyleSheet.create({
   entryWrapper:       { marginBottom: 12 },
   entryTile:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: C.matteSand, borderRadius: 32, padding: 20 },
   entryLeft:          { flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1, marginRight: 12 },
-  entryIconBox:       { width: 40, height: 40, borderRadius: 12, backgroundColor: C.surfaceContLow, alignItems: 'center', justifyContent: 'center' },
+  entryIconBox:       { width: 40, height: 40, borderRadius: 12, backgroundColor: C.surfaceContLow, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  entryHrAvatar:      { width: 40, height: 40 },
   entryTitleRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
   entryTitle:         { fontSize: 16, fontWeight: '800', color: C.onSurface, letterSpacing: -0.4 },
   entryMeta:          { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1 },

@@ -145,11 +145,14 @@ export default function HomeFeedScreen() {
         const jobList = jobData.jobs.map((j: any) => ({
           id: j._id,
           title: j.title,
+          description: j.description,
           company: j.companyId?.name || 'Unknown Company',
           location: j.location,
           salary: j.salary || 'Salary not disclosed',
+          type: j.type || 'Full-time',
           tags: j.skills || [],
           logo: j.companyId?.logoUrl || getJobImage(j.title, j.companyId?.name),
+          postedBy: j.postedById || null,
         }));
         setJobs(jobList);
         setDynamicChart(CHART_DATA.map(d => ({ ...d, value: Math.min(1.0, d.value * (0.9 + Math.random() * 0.2) + (jobList.length / 100)) })));
@@ -268,7 +271,14 @@ export default function HomeFeedScreen() {
                         navigation.navigate('JobDetails', { job: item });
                       }}
                     >
-                      <Image source={{ uri: item.logo }} style={styles.jobImage} />
+                      <View style={styles.imageContainer}>
+                        <Image source={{ uri: item.logo }} style={styles.jobImage} />
+                        {item.postedBy?.profileImage && (
+                          <View style={styles.hrBadge}>
+                            <Image source={{ uri: item.postedBy.profileImage }} style={styles.hrAvatar} />
+                          </View>
+                        )}
+                      </View>
                       <View style={styles.jobCardContent}>
                         <Text style={styles.jobTags}>{(Array.isArray(item.tags) ? item.tags.join(' • ') : item.tags || '').toUpperCase()}</Text>
                         <Text style={styles.jobTitle} numberOfLines={1}>{item.title}</Text>
@@ -362,8 +372,11 @@ const styles = StyleSheet.create({
   sectionTitle:      { fontSize: 24, fontWeight: '600', color: C.onSurface, letterSpacing: -0.5 },
   seeAll:            { fontSize: 11, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 4 },
   jobCard:           { width: width * 0.65, backgroundColor: C.surface, borderRadius: 12, overflow: 'hidden', marginRight: 16 }, 
+  imageContainer:    { position: 'relative', width: '100%', height: 120 },
   jobImage:          { width: '100%', height: 120, backgroundColor: C.outlineVariant },
-  jobCardContent:    { padding: 16 },
+  hrBadge:           { position: 'absolute', bottom: -12, right: 12, width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: '#FFF', backgroundColor: '#FFF', padding: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  hrAvatar:          { width: 28, height: 28, borderRadius: 14 },
+  jobCardContent:    { padding: 16, paddingTop: 20 },
   jobTags:           { fontSize: 9, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 10 },
   jobTitle:          { fontSize: 16, fontWeight: '600', color: C.onSurface, marginBottom: 6 },
   jobCompany:        { fontSize: 13, color: C.onSurfaceVariant, marginBottom: 16 },

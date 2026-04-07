@@ -175,9 +175,16 @@ export default function JobDetailsScreen() {
               <Text style={styles.companyNameText}>{company}</Text>
               <Text style={styles.companyCategoryText}>{companyCategory}</Text>
             </View>
-            <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-              <Text style={styles.portfolioText}>PORTFOLIO</Text>
-            </TouchableOpacity>
+            <View style={styles.postedByBox}>
+              {job.postedBy?.profileImage ? (
+                <Image source={{ uri: job.postedBy.profileImage }} style={styles.postedByAvatar} />
+              ) : (
+                <View style={[styles.postedByAvatar, { backgroundColor: P.surfaceLow, alignItems: 'center', justifyContent: 'center' }]}>
+                  <Ionicons name="person" size={12} color={P.onSurfaceVariant} />
+                </View>
+              )}
+              <Text style={styles.postedByName}>{job.postedBy?.name || 'HR Team'}</Text>
+            </View>
           </View>
           
           <Text style={styles.companyBlurb}>
@@ -393,6 +400,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: T.textMuted,
     letterSpacing: 1,
+  },
+  postedByBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: P.surfaceLow,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 100,
+  },
+  postedByAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  postedByName: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: T.textMain,
+    letterSpacing: 0.5,
   },
   portfolioText: {
     fontSize: 10,

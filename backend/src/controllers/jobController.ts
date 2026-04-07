@@ -43,6 +43,7 @@ export const listJobs = async (_req: Request, res: Response) => {
     try {
         const jobs = await Job.find({ status: 'Active' })
             .populate('companyId', 'name logoUrl')
+            .populate('postedById', 'name profileImage')
             .sort({ createdAt: -1 });
         return res.json({ success: true, jobs });
     } catch (err: any) {
@@ -65,7 +66,8 @@ export const getHRJobs = async (req: Request, res: Response) => {
 export const getJobById = async (req: Request, res: Response) => {
     try {
         const job = await Job.findById(req.params.id)
-            .populate('companyId', 'name logoUrl');
+            .populate('companyId', 'name logoUrl')
+            .populate('postedById', 'name profileImage');
         if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
         return res.json({ success: true, job });
     } catch (err: any) {
