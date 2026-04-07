@@ -59,27 +59,28 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
 
   return (
     <Animated.View style={[styles.entryWrapper, { opacity: anim, transform: [{ translateY }] }]}>
-      <TouchableOpacity activeOpacity={0.75} style={styles.entryTile} onPress={onPress}>
+      <TouchableOpacity activeOpacity={0.8} style={styles.entryTile} onPress={onPress}>
         <View style={styles.entryLeft}>
           <View style={styles.entryIconBox}>
-            <MaterialCommunityIcons name={job.icon as any} size={22} color={C.primary} />
+             <MaterialCommunityIcons name={job.icon as any} size={20} color={C.surface} />
           </View>
           <View style={{ flex: 1 }}>
-            <View style={styles.entryTitleRow}>
-              <Text style={styles.entryTitle}>{job.title}</Text>
-              {job.badge && (
-                <View style={job.badge.type === 'new' ? styles.badgeNew : styles.badgeClose}>
-                  <Text style={job.badge.type === 'new' ? styles.badgeNewText : styles.badgeCloseText}>
-                    {job.badge.label}
-                  </Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.entryMeta}>{job.company} · {job.location}</Text>
+             <View style={styles.entryTitleRow}>
+                <Text style={styles.entryTitle}>{job.title}</Text>
+                {job.badge && (
+                  <View style={job.badge.type === 'new' ? styles.badgeNew : styles.badgeClose}>
+                    <Text style={job.badge.type === 'new' ? styles.badgeNewText : styles.badgeCloseText}>
+                      {job.badge.label}
+                    </Text>
+                  </View>
+                )}
+             </View>
+             <Text style={styles.entryMeta}>{job.company.toUpperCase()}  ·  {job.location}</Text>
           </View>
         </View>
         <View style={styles.entryRight}>
           <Text style={styles.entrySalary}>{job.salary}</Text>
+          <Ionicons name="chevron-forward" size={14} color={C.outlineVariant} />
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
   heroHeader:         { marginBottom: 20 },
   heroEyebrow:        { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
   heroEyebrowLine:    { width: 32, height: 2, backgroundColor: C.primary },
-  heroEyebrowText:    { fontSize: 10, fontWeight: '900', letterSpacing: 5, color: C.indigo900, opacity: 0.8 },
+  heroEyebrowText:    { fontSize: 10, fontWeight: '900', letterSpacing: 1.5, color: C.indigo900, opacity: 0.8 },
   heroTitle:          { fontSize: 38, fontWeight: '300', letterSpacing: -1, color: C.onSurface, lineHeight: 46 },
   heroTitleBold:      { fontWeight: '900', fontStyle: 'italic', color: C.indigo900 },
   
@@ -315,26 +316,26 @@ const styles = StyleSheet.create({
   heroBtn:            { alignSelf: 'flex-start', paddingHorizontal: 36, paddingVertical: 16, backgroundColor: C.indigo900, borderRadius: 16, marginTop: 12, overflow: 'hidden' },
   heroBtnText:        { fontSize: 10, fontWeight: '900', letterSpacing: 3, color: '#ffffff' },
   
-  tabsSurface:        { backgroundColor: C.background, paddingTop: 14, paddingBottom: 0, borderBottomWidth: 1, borderBottomColor: 'rgba(169,180,185,0.08)' },
+  tabsSurface:        { backgroundColor: C.background, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(169,180,185,0.08)' },
   tabsInner:          { paddingHorizontal: 24, gap: 32, flexDirection: 'row' },
-  tab:                { paddingBottom: 6, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tab:                { paddingBottom: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabActive:          { borderBottomColor: C.primary },
-  tabText:            { fontSize: 11, fontWeight: '600', letterSpacing: 4.5, color: C.outline, textTransform: 'uppercase' },
+  tabText:            { fontSize: 11, fontWeight: '600', letterSpacing: 1.5, color: C.outline, textTransform: 'uppercase' },
   tabTextActive:      { fontWeight: '900', color: C.primary },
-  section:            { marginTop: 0 },
-  sectionLabel:       { paddingHorizontal: 24, fontSize: 11, fontWeight: '900', letterSpacing: 6, color: C.outline, textTransform: 'uppercase', marginBottom: 8 },
+  section:            { marginTop: 24 },
+  sectionLabel:       { paddingHorizontal: 24, fontSize: 11, fontWeight: '900', letterSpacing: 1.5, color: C.outline, textTransform: 'uppercase', marginBottom: 18 },
   listContainer:      { paddingHorizontal: 16 },
-  entryWrapper:       { marginBottom: 14 },
-  entryTile:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 24, padding: 18, shadowColor: '#000', shadowOffset: { width:0, height:4 }, shadowOpacity:0.03, shadowRadius:6 },
-  entryLeft:          { flexDirection: 'row', alignItems: 'center', gap: 18, flex: 1, marginRight: 12 },
-  entryIconBox:       { width: 44, height: 44, borderRadius: 14, backgroundColor: C.surfaceContLow, alignItems: 'center', justifyContent: 'center' },
-  entryTitleRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 },
-  entryTitle:         { fontSize: 17, fontWeight: '700', color: C.onSurface, letterSpacing: -0.5 },
-  entryMeta:          { fontSize: 13, fontWeight: '500', color: C.onSurfaceVariant },
-  entryRight:         { alignItems: 'flex-end', gap: 4 },
-  entrySalary:        { fontSize: 11, fontWeight: '900', letterSpacing: 2, color: C.primary, textTransform: 'uppercase' },
-  badgeNew:           { paddingHorizontal: 8, paddingVertical: 4, backgroundColor: C.surfaceContLow, borderRadius: 8 },
-  badgeNewText:       { fontSize: 10, fontWeight: '900', color: C.primary },
-  badgeClose:         { paddingHorizontal: 8, paddingVertical: 4, backgroundColor: 'rgba(158, 63, 78, 0.04)', borderRadius: 8 },
-  badgeCloseText:     { fontSize: 10, fontWeight: '900', color: C.error },
+  entryWrapper:       { marginBottom: 12 },
+  entryTile:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: C.matteSand, borderRadius: 32, padding: 20 },
+  entryLeft:          { flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1, marginRight: 12 },
+  entryIconBox:       { width: 48, height: 48, borderRadius: 24, backgroundColor: C.matteSlate, alignItems: 'center', justifyContent: 'center' },
+  entryTitleRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
+  entryTitle:         { fontSize: 16, fontWeight: '800', color: C.onSurface, letterSpacing: -0.4 },
+  entryMeta:          { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1 },
+  entryRight:         { alignItems: 'flex-end', gap: 8 },
+  entrySalary:        { fontSize: 11, fontWeight: '900', letterSpacing: 1.5, color: C.primary, textTransform: 'uppercase' },
+  badgeNew:           { paddingHorizontal: 10, paddingVertical: 5, backgroundColor: C.matteSage, borderRadius: 100 },
+  badgeNewText:       { fontSize: 9, fontWeight: '900', color: C.onSurface, letterSpacing: 0.5 },
+  badgeClose:         { paddingHorizontal: 10, paddingVertical: 5, backgroundColor: C.matteClay, borderRadius: 100 },
+  badgeCloseText:     { fontSize: 9, fontWeight: '900', color: C.onSurface, letterSpacing: 0.5 },
 });

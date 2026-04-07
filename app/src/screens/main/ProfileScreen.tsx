@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
 
   // Editorial Sectioning
   section: { paddingHorizontal: 24, marginBottom: 56 },
-  editorialLabel: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 2.5, marginBottom: 24 },
+  editorialLabel: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 1.2, marginBottom: 24 },
 
   // Timeline
   timelineBlock: { paddingLeft: 8 },
@@ -346,5 +346,5 @@ const styles = StyleSheet.create({
   settingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.015)' },
   settingLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: C.onSurface },
 
-  versionFooter: { textAlign: 'center', fontSize: 10, fontWeight: '700', color: 'rgba(0,0,0,0.1)', letterSpacing: 2, marginBottom: 40 },
+  versionFooter: { textAlign: 'center', fontSize: 10, fontWeight: '700', color: 'rgba(0,0,0,0.1)', letterSpacing: 1.2, marginBottom: 40 },
 });

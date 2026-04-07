@@ -15,6 +15,12 @@ export const PALETTE = {
   primary:         '#1A1A1A', // Matte Black
   primaryText:     '#FFFFFF',
   
+  // Matte Harmony (Organic Accents)
+  matteSand:       '#F6F6F1', // Paper-like neutral
+  matteSage:       '#D9E3D8', // Soft muted green
+  matteClay:       '#E7DCD0', // Warm earthy tone
+  matteSlate:      '#2D3436', // Deep matte night
+  
   // Text & Content
   onSurface:       '#1A1A1A', // Matte Black
   onSurfaceVariant: '#566166', // Matte Medium Grey
@@ -33,13 +39,13 @@ export const TYPOGRAPHY = {
   h2: { fontSize: 32, fontWeight: '800', letterSpacing: -0.5, lineHeight: 38 },
   h3: { fontSize: 24, fontWeight: '800', letterSpacing: -0.6 },
   
-  label: { fontSize: 11, fontWeight: '900', letterSpacing: 5, textTransform: 'uppercase' },
-  labelSmall: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' },
+  label: { fontSize: 11, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  labelSmall: { fontSize: 10, fontWeight: '700', letterSpacing: 1.0, textTransform: 'uppercase' },
   
   body: { fontSize: 15, fontWeight: '400', lineHeight: 22 },
   bodySecondary: { fontSize: 13, fontWeight: '500', lineHeight: 20 },
   
-  metadata: { fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  metadata: { fontSize: 10, fontWeight: '800', letterSpacing: 1.0 },
 };
 
 export const GEOMETRY = {
