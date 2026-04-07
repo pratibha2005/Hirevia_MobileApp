@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -182,7 +183,14 @@ export default function HomeFeedScreen() {
               <View style={styles.avatar}><Ionicons name="person" size={16} color={C.primary} /></View>
               <Text style={styles.workspaceLabel}>Hello, {userName} 👋</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}><Ionicons name="search" size={20} color={C.onSurface} /></TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                navigation.navigate('Search');
+              }}
+            >
+              <Ionicons name="search" size={20} color={C.onSurface} />
+            </TouchableOpacity>
           </FadeSlide>
 
           <FadeSlide delay={80}>
@@ -202,7 +210,13 @@ export default function HomeFeedScreen() {
               <Text style={styles.cleanCompanyText}>{activeMotion?.jobId?.companyId?.name || 'Explore Opportunities'}</Text>
               <Text style={styles.cleanRoleText}>{activeMotion?.jobId?.title || 'Start applying to see updates'}</Text>
               <View style={styles.cleanActionRow}>
-                <TouchableOpacity style={styles.cleanJoinBtn} onPress={() => activeMotion ? navigation.navigate('Applications') : navigation.navigate('Search')}>
+                <TouchableOpacity 
+                  style={styles.cleanJoinBtn} 
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    activeMotion ? navigation.navigate('Applications') : navigation.navigate('Search');
+                  }}
+                >
                   <Text style={styles.cleanJoinBtnText}>{activeMotion ? 'VIEW STATUS' : 'FIND JOBS'}</Text>
                   <Ionicons name="arrow-forward" size={14} color="#FFF" />
                 </TouchableOpacity>
@@ -214,7 +228,14 @@ export default function HomeFeedScreen() {
           <FadeSlide delay={240}>
             <View style={styles.sectionHeader}>
               <View><Text style={styles.sectionLabel}>CURATED FOR YOU</Text><Text style={styles.sectionTitle}>Discover</Text></View>
-              <TouchableOpacity onPress={() => navigation.navigate('Search')}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  navigation.navigate('Search');
+                }}
+              >
+                <Text style={styles.seeAll}>SEE ALL</Text>
+              </TouchableOpacity>
             </View>
             <View style={{ marginHorizontal: -24 }}>
               {loading ? (
@@ -240,7 +261,13 @@ export default function HomeFeedScreen() {
                   horizontal data={jobs} keyExtractor={(item) => item.id} showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ paddingLeft: 24, paddingRight: 48 }}
                   renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.jobCard} onPress={() => navigation.navigate('JobDetails', { job: item })}>
+                    <TouchableOpacity 
+                      style={styles.jobCard} 
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        navigation.navigate('JobDetails', { job: item });
+                      }}
+                    >
                       <Image source={{ uri: item.logo }} style={styles.jobImage} />
                       <View style={styles.jobCardContent}>
                         <Text style={styles.jobTags}>{(Array.isArray(item.tags) ? item.tags.join(' • ') : item.tags || '').toUpperCase()}</Text>

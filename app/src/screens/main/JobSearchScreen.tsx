@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SkeletonLoader from '../../components/SkeletonLoader';
+import * as Haptics from 'expo-haptics';
 import {
   View,
   Text,
@@ -60,7 +61,14 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
 
   return (
     <Animated.View style={[styles.entryWrapper, { opacity: anim, transform: [{ translateY }] }]}>
-      <TouchableOpacity activeOpacity={0.8} style={styles.entryTile} onPress={onPress}>
+      <TouchableOpacity 
+        activeOpacity={0.8} 
+        style={styles.entryTile} 
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }}
+      >
         <View style={styles.entryLeft}>
           <View style={styles.entryIconBox}>
              <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
@@ -188,7 +196,13 @@ export default function JobSearchScreen() {
             <Text style={styles.headerTitle}>{displayName}</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.headerIconBtn} onPress={() => setShowSearch(!showSearch)}>
+            <TouchableOpacity 
+              style={styles.headerIconBtn} 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowSearch(!showSearch);
+              }}
+            >
               <Ionicons name={showSearch ? "close" : "search"} size={22} color={showSearch ? C.error : C.primary} />
             </TouchableOpacity>
           </View>
@@ -236,7 +250,13 @@ export default function JobSearchScreen() {
             <View style={styles.heroMetaContent}>
               <View style={styles.heroMetaRow}><Text style={styles.heroMetaLabel}>COMPANY</Text><Text style={styles.heroMetaValueIndigo}>{featuredJob?.company || 'Studio Arkhos'}</Text></View>
               <View style={styles.heroMetaRow}><Text style={styles.heroMetaLabel}>LOCATION</Text><Text style={styles.heroMetaValue}>{featuredJob?.location || 'Copenhagen / Remote'}</Text></View>
-              <TouchableOpacity style={styles.heroBtn} onPress={() => featuredJob && navigation.navigate('JobDetails', { job: featuredJob })}>
+              <TouchableOpacity 
+                style={styles.heroBtn} 
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  featuredJob && navigation.navigate('JobDetails', { job: featuredJob });
+                }}
+              >
                 <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill} />
                 <Text style={styles.heroBtnText}>VIEW DETAILS</Text>
               </TouchableOpacity>
@@ -247,7 +267,14 @@ export default function JobSearchScreen() {
         <View style={styles.tabsSurface}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsInner}>
             {ROLE_TABS.map((tab, i) => (
-              <TouchableOpacity key={tab} onPress={() => setActiveTab(i)} style={[styles.tab, activeTab === i && styles.tabActive]}>
+              <TouchableOpacity 
+                key={tab} 
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setActiveTab(i);
+                }} 
+                style={[styles.tab, activeTab === i && styles.tabActive]}
+              >
                 <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>{tab}</Text>
               </TouchableOpacity>
             ))}

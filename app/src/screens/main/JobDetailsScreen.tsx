@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, StatusBar 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 import { PALETTE as P, TYPOGRAPHY as Typo } from '../../theme/tokens';
 
 // ─── Editorial Theme (Synced) ────────────────────────────────────────────────
@@ -192,12 +193,20 @@ export default function JobDetailsScreen() {
         <TouchableOpacity
           style={styles.applyBtn}
           activeOpacity={0.8}
-          onPress={() => navigation.navigate('ApplyFlow', { job })}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            navigation.navigate('ApplyFlow', { job });
+          }}
         >
           <Text style={styles.applyBtnText}>Apply for this Role</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.bookmarkBtn}>
+        <TouchableOpacity 
+          style={styles.bookmarkBtn}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }}
+        >
           <Ionicons name="bookmark" size={18} color={T.textMain} />
         </TouchableOpacity>
       </View>
