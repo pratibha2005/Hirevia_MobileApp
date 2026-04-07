@@ -6,18 +6,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// ─── Monochrome Dossier Tokens (Final Polish Edition) ────────────────────────
-const C = {
-  background: '#F7F9FB', // Whisper-Quiet Grey-White Base
-  surface: '#FFFFFF',    // Pure Architectural Surface
-  surfaceLow: '#F0F4F7', // Ghost Material / Chips
-  onSurface: '#1A1C1E',  // Deep Charcoal
-  onSurfaceVar: '#7A8A99', // Metadata / Labels
-  primary: '#4E5A9A',    // Signature Slate-Indigo (High-End Accent)
-  outline: 'rgba(42, 52, 57, 0.04)', // Almost Invisible Hairline
-  danger: '#EF4444',
-  timelineLine: '#DBE2E8', // Slightly darker for high-res visibility
-};
+import { PALETTE as C, TYPOGRAPHY as T } from '../../theme/tokens';
 
 // ─── Fade-In Wrapper ────────────────────────────────────────────────────────────
 function FadeIn({ children, delay = 0, style }: any) {
@@ -232,11 +221,11 @@ export default function ProfileScreen() {
                 {['Preferences', 'Privacy'].map(item => (
                    <TouchableOpacity key={item} style={styles.settingRow}>
                       <Text style={styles.settingLabel}>{item}</Text>
-                      <Ionicons name="chevron-forward" size={14} color={C.onSurfaceVar} />
+                      <Ionicons name="chevron-forward" size={14} color={C.onSurfaceVariant} />
                    </TouchableOpacity>
                 ))}
                 <TouchableOpacity style={styles.settingRow} onPress={() => navigation.replace('Login')}>
-                   <Text style={[styles.settingLabel, { color: C.danger }]}>Sign Out</Text>
+                   <Text style={[styles.settingLabel, { color: C.error }]}>Sign Out</Text>
                 </TouchableOpacity>
              </View>
           </FadeIn>
@@ -264,7 +253,7 @@ const styles = StyleSheet.create({
   avatarWrapper: { width: 100, height: 100, borderRadius: 50, backgroundColor: C.surface, padding: 3 },
   avatarImg: { width: '100%', height: '100%', borderRadius: 50 },
   heroName: { fontSize: 24, fontWeight: '800', color: C.onSurface, letterSpacing: -0.6, marginBottom: 4 },
-  heroMeta: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.2 },
+  heroMeta: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.2 },
 
   // Mastery Progress Card (Straight Update)
   masteryCard: {
@@ -283,7 +272,7 @@ const styles = StyleSheet.create({
   masteryLabel: { 
     fontSize: 9, 
     fontWeight: '800', 
-    color: C.onSurfaceVar, 
+    color: C.onSurfaceVariant, 
     letterSpacing: 2, 
   },
   masteryPercentLabel: {
@@ -312,21 +301,21 @@ const styles = StyleSheet.create({
 
   // Editorial Sectioning
   section: { paddingHorizontal: 24, marginBottom: 56 },
-  editorialLabel: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 2.5, marginBottom: 24 },
+  editorialLabel: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 2.5, marginBottom: 24 },
 
   // Timeline
   timelineBlock: { paddingLeft: 8 },
   timelineRow: { flexDirection: 'row', minHeight: 110 },
   timelineIndicators: { width: 24, alignItems: 'center', marginRight: 24, position: 'relative' },
-  timelineLine: { position: 'absolute', width: 2, backgroundColor: C.timelineLine, left: '50%', marginLeft: -1 },
+  timelineLine: { position: 'absolute', width: 2, backgroundColor: C.outlineVariant, left: '50%', marginLeft: -1 },
   timelineNode: { width: 24, height: 24, borderRadius: 12, backgroundColor: C.onSurface, justifyContent: 'center', alignItems: 'center', zIndex: 2, marginTop: 0 },
   timelineInnerNode: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFF' },
   timelineContent: { flex: 1 },
   timelineHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   timelineTitle: { fontSize: 18, fontWeight: '800', color: C.onSurface, letterSpacing: -0.4 },
-  timelineStatusPin: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 1.2 },
-  timelineSub: { fontSize: 15, fontWeight: '600', color: C.onSurfaceVar, marginBottom: 8 },
-  timelineDate: { fontSize: 11, fontWeight: '700', color: C.onSurfaceVar },
+  timelineStatusPin: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 1.2 },
+  timelineSub: { fontSize: 15, fontWeight: '600', color: C.onSurfaceVariant, marginBottom: 8 },
+  timelineDate: { fontSize: 11, fontWeight: '700', color: C.onSurfaceVariant },
 
   // ghost chips
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
@@ -336,7 +325,7 @@ const styles = StyleSheet.create({
   assetCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, padding: 16, borderRadius: 24, borderWidth: 1, borderColor: C.outline },
   assetIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.background, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
   assetTitle: { fontSize: 14, fontWeight: '700', color: C.onSurface },
-  assetMeta: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVar, letterSpacing: 1, marginTop: 2 },
+  assetMeta: { fontSize: 9, fontWeight: '800', color: C.onSurfaceVariant, letterSpacing: 1, marginTop: 2 },
   assetUpdateBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6, borderWidth: 1, borderColor: C.outline },
   updateBtnText: { fontSize: 9, fontWeight: '800', color: C.onSurface },
 
@@ -344,9 +333,9 @@ const styles = StyleSheet.create({
   projectHero: { backgroundColor: C.surface, padding: 32, borderRadius: 32, overflow: 'hidden' },
   projectTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   yearBadge: { backgroundColor: C.background, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  yearBadgeText: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVar },
+  yearBadgeText: { fontSize: 10, fontWeight: '800', color: C.onSurfaceVariant },
   projectHeroTitle: { fontSize: 24, fontWeight: '800', color: C.onSurface, letterSpacing: -0.6, marginBottom: 12 },
-  projectHeroDesc: { fontSize: 15, color: C.onSurfaceVar, lineHeight: 22, marginBottom: 24 },
+  projectHeroDesc: { fontSize: 15, color: C.onSurfaceVariant, lineHeight: 22, marginBottom: 24 },
   caseStudyLink: { alignSelf: 'flex-start', borderBottomWidth: 1.5, borderBottomColor: C.primary, paddingBottom: 2 },
   caseStudyText: { fontSize: 11, fontWeight: '800', color: C.primary, letterSpacing: 0.5 },
   decorShape: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: C.background, bottom: -70, right: -40, zIndex: -1 },

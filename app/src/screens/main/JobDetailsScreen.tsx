@@ -4,17 +4,18 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, StatusBar 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { PALETTE as P, TYPOGRAPHY as Typo } from '../../theme/tokens';
 
-// ─── Editorial Theme (From Screenshot) ──────────────────────────────────────────
+// ─── Editorial Theme (Synced) ────────────────────────────────────────────────
 const T = {
-  bgWhite: '#FFFFFF',
-  bgGray: '#F7F8F9', // The subtle gray block for requirements
-  textMain: '#1A1D2B', // Deep, almost black navy
-  textP: '#6A7287', // Muted slate gray for paragraphs
-  textMuted: '#9CA3AF',
-  accentDark: '#3A4468', // The dark slate-indigo for buttons and icons
-  accentLight: '#687193', // Lighter slate for labels like "ABOUT THE ROLE"
-  border: '#EAEBEE',
+  bgWhite: P.surface,
+  bgGray: P.background,
+  textMain: P.onSurface,
+  textP: P.onSurfaceVariant,
+  textMuted: P.outline,
+  accentDark: P.primary,
+  accentLight: P.outline,
+  border: P.outlineVariant,
 };
 
 // ─── Dynamic Image Helper ───────────────────────────────────────────────────────

@@ -9,16 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../api/config';
 
-// ─── Home Screen "Pure Matte" Sync ───────────────────────────────────────────
-const THEME = {
-    primary: '#2C2C2C',     // Deep Matte Dark Grey
-    background: '#F3F3F3',  // Pure Matte Light Grey
-    surface: '#FFFFFF',     // Pure White
-    text: '#1A1A1A',        // Matte Black
-    textMuted: '#7A7A7A',   // Matte Medium Grey
-    border: '#E6E6E6',      // Ultra-soft grey
-    radius: 100,            // Pill geometry
-};
+import { PALETTE as THEME, TYPOGRAPHY as T } from '../../theme/tokens';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -176,7 +167,7 @@ export default function RegisterScreen({ navigation }: any) {
             <View style={[styles.floatingHeader, { paddingTop: insets.top + 8 }]}>
                 <Text style={styles.headerLogo}>Hire<Text style={styles.headerLogoBold}>Via</Text></Text>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
-                    <Ionicons name="close-outline" size={28} color={THEME.text} />
+                    <Ionicons name="close-outline" size={28} color={THEME.onSurface} />
                 </TouchableOpacity>
             </View>
 
@@ -224,7 +215,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         <AnimatedTextInput
                                             style={[styles.input, { borderBottomColor: nameFocusAnim.interpolate({
                                                 inputRange: [0, 1],
-                                                outputRange: [THEME.border, THEME.primary]
+                                                outputRange: [THEME.outline, THEME.primary]
                                             }) }]}
                                             placeholder="Julian Sterling"
                                             placeholderTextColor="#A0AEC0"
@@ -246,7 +237,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         <AnimatedTextInput
                                             style={[styles.input, { borderBottomColor: phoneFocusAnim.interpolate({
                                                 inputRange: [0, 1],
-                                                outputRange: [THEME.border, THEME.primary]
+                                                outputRange: [THEME.outline, THEME.primary]
                                             }) }]}
                                             placeholder="+1 (555) 000-0000"
                                             placeholderTextColor="#A0AEC0"
@@ -269,7 +260,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         <AnimatedTextInput
                                             style={[styles.input, { borderBottomColor: emailFocusAnim.interpolate({
                                                 inputRange: [0, 1],
-                                                outputRange: [THEME.border, THEME.primary]
+                                                outputRange: [THEME.outline, THEME.primary]
                                             }) }]}
                                             placeholder="julian@atelier.design"
                                             placeholderTextColor="#A0AEC0"
@@ -294,13 +285,13 @@ export default function RegisterScreen({ navigation }: any) {
                                         onPress={handlePickResume}
                                         activeOpacity={0.8}
                                     >
-                                        <Ionicons name="document-attach-outline" size={20} color={resume ? THEME.primary : THEME.textMuted} />
+                                        <Ionicons name="document-attach-outline" size={20} color={resume ? THEME.primary : THEME.onSurfaceVariant} />
                                         <View style={{ flex: 1 }}>
                                             <Text style={[styles.resumeBtnText, resume && { color: THEME.primary, fontWeight: '700' }]}>
                                                 {resume ? resume.name : 'Select PDF or Word doc'}
                                             </Text>
                                         </View>
-                                        {resume ? <TouchableOpacity onPress={() => setResume(null)}><Ionicons name="close-circle" size={18} color={THEME.textMuted} /></TouchableOpacity> : <Text style={styles.browseText}>BROWSE</Text>}
+                                        {resume ? <TouchableOpacity onPress={() => setResume(null)}><Ionicons name="close-circle" size={18} color={THEME.onSurfaceVariant} /></TouchableOpacity> : <Text style={styles.browseText}>BROWSE</Text>}
                                     </TouchableOpacity>
                                 </View>
 
@@ -310,7 +301,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         <AnimatedTextInput
                                             style={[styles.input, { borderBottomColor: passFocusAnim.interpolate({
                                                 inputRange: [0, 1],
-                                                outputRange: [THEME.border, THEME.primary]
+                                                outputRange: [THEME.outline, THEME.primary]
                                             }) }]}
                                             placeholder="••••••••"
                                             placeholderTextColor="#A0AEC0"
@@ -347,7 +338,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         <AnimatedTextInput
                                             style={[styles.input, { borderBottomColor: otpFocusAnim.interpolate({
                                                 inputRange: [0, 1],
-                                                outputRange: [THEME.border, THEME.primary]
+                                                outputRange: [THEME.outline, THEME.primary]
                                             }), textAlign: 'center', letterSpacing: 8 }]}
                                             placeholder="000000"
                                             placeholderTextColor="#A0AEC0"
@@ -380,7 +371,7 @@ export default function RegisterScreen({ navigation }: any) {
                                     style={styles.backBtn} 
                                     onPress={() => setStep('DETAILS')}
                                 >
-                                    <Ionicons name="arrow-back" size={16} color={THEME.textMuted} />
+                                    <Ionicons name="arrow-back" size={16} color={THEME.onSurfaceVariant} />
                                     <Text style={styles.backBtnText}>Back to Details</Text>
                                 </TouchableOpacity>
                             </View>
@@ -411,7 +402,7 @@ const styles = StyleSheet.create({
         zIndex: 100,
         backgroundColor: 'transparent',
     },
-    headerLogo: { fontSize: 18, fontWeight: '300', color: THEME.text, letterSpacing: -0.5 },
+    headerLogo: { fontSize: 18, fontWeight: '300', color: THEME.onSurface, letterSpacing: -0.5 },
     headerLogoBold: { fontWeight: '800', color: THEME.primary },
     closeBtn: { padding: 4 },
 
@@ -429,14 +420,14 @@ const styles = StyleSheet.create({
     heroLabel: { 
         fontSize: 10, 
         fontWeight: '800', 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         letterSpacing: 2.0,
         marginBottom: 8,
     },
     heroTitle: { 
         fontSize: 28, 
         fontWeight: '800', 
-        color: THEME.text, 
+        color: THEME.onSurface, 
         letterSpacing: -0.5,
         lineHeight: 34,
     },
@@ -447,13 +438,13 @@ const styles = StyleSheet.create({
     title: { 
         fontSize: 36, 
         fontWeight: '800', 
-        color: THEME.text, 
+        color: THEME.onSurface, 
         marginBottom: 8, 
         letterSpacing: -1.2,
     },
     subtitle: { 
         fontSize: 16, 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         lineHeight: 24,
         fontWeight: '500',
     },
@@ -464,7 +455,7 @@ const styles = StyleSheet.create({
     label: { 
         fontSize: 10, 
         fontWeight: '800', 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         marginBottom: 10, 
         letterSpacing: 1.5,
         textTransform: 'uppercase',
@@ -474,7 +465,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#E2E8F0', 
         paddingVertical: 12, 
         fontSize: 18, 
-        color: THEME.text,
+        color: THEME.onSurface,
         fontWeight: '400',
     },
     focusLine: { position: 'absolute', bottom: 0, left: 0, height: 2, backgroundColor: THEME.primary, zIndex: 2 },
@@ -487,7 +478,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1.5,
         borderBottomColor: '#E2E8F0',
     },
-    resumeBtnText: { fontSize: 18, color: THEME.textMuted, fontWeight: '400' },
+    resumeBtnText: { fontSize: 18, color: THEME.onSurfaceVariant, fontWeight: '400' },
     browseText: { fontSize: 10, fontWeight: '800', color: THEME.primary, opacity: 0.6 },
 
     errorText: { color: '#E53E3E', fontSize: 13, marginBottom: 16, textAlign: 'center', fontWeight: '600' },
@@ -504,10 +495,10 @@ const styles = StyleSheet.create({
 
     // Footer
     footer: { marginTop: 40, marginBottom: 20, alignItems: 'center' },
-    footerText: { color: THEME.textMuted, fontSize: 15, fontWeight: '500' },
+    footerText: { color: THEME.onSurfaceVariant, fontSize: 15, fontWeight: '500' },
     joinText: { color: THEME.primary, fontWeight: '800' },
 
     // Navigation
     backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24 },
-    backBtnText: { fontSize: 14, fontWeight: '800', color: THEME.textMuted },
+    backBtnText: { fontSize: 14, fontWeight: '800', color: THEME.onSurfaceVariant },
 });

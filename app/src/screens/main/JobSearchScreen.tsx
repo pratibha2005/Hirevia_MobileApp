@@ -24,25 +24,7 @@ import { BlurView } from 'expo-blur';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ─── Design Tokens ────────────────────────────────────────────────────────────
-const C = {
-  background:        '#f7f9fb',
-  surface:           '#f7f9fb',
-  surfaceContLow:    '#f0f4f7',
-  surfaceContHigh:   '#e1e9ee',
-  surfaceContHighest:'#d9e4ea',
-  surfaceContLowest: '#ffffff',
-  primary:           '#4e5a9a',
-  onSurface:         '#2a3439',
-  onSurfaceVariant:  '#566166',
-  outline:           '#717c82',
-  outlineVariant:    '#a9b4b9',
-  error:             '#9e3f4e',
-  indigo900:         '#1e3a5f',
-};
+import { PALETTE as C, TYPOGRAPHY as T } from '../../theme/tokens';
 
 const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1496664444929-8c75efb9546f?q=80&w=2600&auto=format&fit=crop';
 const ROLE_TABS = ['ALL ROLES', 'REMOTE', 'DESIGN', 'LEADERSHIP'];

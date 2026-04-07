@@ -8,26 +8,16 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
 
-// ─── Exact Design Tokens ──────────────────────────────────────────────────────
-const C = {
-  background:     '#F3F3F3', // Pure Matte Light Grey
-  surface:        '#FFFFFF', // Pure White for cards
-  surfaceLow:     '#FAFAFA', // Ultra-soft grey for chips
-  primary:        '#2C2C2C', // Deep Matte Dark Grey
-  primaryLight:   '#EBEBEB', // Soft structural grey
-  onSurface:      '#1A1A1A', // Matte Black
-  onSurfaceVar:   '#7A7A7A', // Matte medium grey
-  outlineVar:     '#E6E6E6', // Barely visible structure line
-};
+import { PALETTE as C, TYPOGRAPHY as T } from '../../theme/tokens';
 
 const STATUS_COLORS: Record<string, { label: string; accent: string; bg: string }> = {
-  'New':          { label: 'SENT',         accent: C.onSurface, bg: C.primaryLight },
-  'Under Review': { label: 'REVIEW',       accent: C.onSurface, bg: C.primaryLight },
-  'Shortlisted':  { label: 'MATCHED',      accent: C.onSurface, bg: C.primaryLight },
+  'New':          { label: 'SENT',         accent: C.onSurface, bg: C.surfaceContLow },
+  'Under Review': { label: 'REVIEW',       accent: C.onSurface, bg: C.surfaceContLow },
+  'Shortlisted':  { label: 'MATCHED',      accent: C.onSurface, bg: C.surfaceContLow },
   'Interview':    { label: 'INTERVIEW',    accent: C.surface,   bg: C.primary },
   'Offer':        { label: 'OFFER',        accent: C.surface,   bg: C.primary },
   'Hired':        { label: 'HIRED',        accent: C.surface,   bg: C.primary },
-  'Rejected':     { label: 'CLOSED',       accent: C.onSurfaceVar, bg: C.outlineVar },
+  'Rejected':     { label: 'CLOSED',       accent: C.onSurfaceVariant, bg: C.outlineVariant },
 };
 
 const FILTERS = ['All', 'Active', 'Interviews', 'Archived'];
@@ -68,7 +58,7 @@ function ApplicationItemCard({ item, index }: { item: any; index: number }) {
           <Text style={styles.cleanRoleText}>{job.title || 'Untitled Narrative'}</Text>
           <View style={styles.cleanActionRow}>
              <View style={styles.cleanDurationBox}>
-                <Ionicons name="location-outline" size={14} color={C.onSurfaceVar} />
+                <Ionicons name="location-outline" size={14} color={C.onSurfaceVariant} />
                 <Text style={styles.cleanDurationText}>{job.location || 'Remote'}</Text>
              </View>
              <TouchableOpacity style={styles.cleanJoinBtn}><Text style={styles.cleanJoinBtnText}>VIEW STATUS</Text><Ionicons name="arrow-forward" size={14} color="#FFF" /></TouchableOpacity>
@@ -146,8 +136,8 @@ export default function ApplicationsScreen() {
 
         <Animated.View style={[styles.searchWrapper, { height: searchHeight, opacity: searchHeight.interpolate({ inputRange: [0, 72], outputRange: [0, 1] }) }]}>
            <View style={styles.gallerySearchArea}>
-              <Ionicons name="search-outline" size={18} color={C.onSurfaceVar} style={{ marginRight: 12 }} />
-              <TextInput placeholder="Search index..." style={styles.searchInput} value={searchQuery} onChangeText={setSearchQuery} placeholderTextColor={C.onSurfaceVar} />
+              <Ionicons name="search-outline" size={18} color={C.onSurfaceVariant} style={{ marginRight: 12 }} />
+              <TextInput placeholder="Search index..." style={styles.searchInput} value={searchQuery} onChangeText={setSearchQuery} placeholderTextColor={C.onSurfaceVariant} />
            </View>
         </Animated.View>
 
@@ -201,30 +191,30 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.background },
   safeArea: { flex: 1 },
   screenHeader: { paddingHorizontal: 24, marginTop: 20, marginBottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sectionLabel: { fontSize: 10, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 },
+  sectionLabel: { fontSize: 10, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 },
   sectionTitle: { fontSize: 24, fontWeight: '600', color: C.onSurface, letterSpacing: -0.5 },
   searchIconTap: { padding: 4 },
   searchWrapper: { paddingHorizontal: 24, overflow: 'hidden' },
-  gallerySearchArea: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, borderRadius: 12, paddingHorizontal: 18, height: 52, borderWidth: 1, borderColor: C.outlineVar },
+  gallerySearchArea: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, borderRadius: 12, paddingHorizontal: 18, height: 52, borderWidth: 1, borderColor: C.outlineVariant },
   searchInput: { flex: 1, fontSize: 14, color: C.onSurface, height: '100%' },
   tabsContainer: { flexDirection: 'row', paddingHorizontal: 24, marginBottom: 8, marginTop: 4, position: 'relative' },
   tabItem: { paddingVertical: 14, paddingHorizontal: 16 },
-  tabLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5 },
+  tabLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 1.5 },
   tabLabelActive: { color: C.onSurface, fontWeight: '700' },
   tabUnderline: { position: 'absolute', bottom: -1, left: 0, height: 3, backgroundColor: C.primary, borderRadius: 1.5 },
   listContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },
-  cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVar, marginBottom: 16 }, 
+  cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVariant, marginBottom: 16 }, 
   cleanMotionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   cleanStagePill:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4 },
   cleanStageText:    { fontSize: 10, fontWeight: '700', color: C.onSurface, letterSpacing: 1.5 },
-  cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.0 },
-  cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 8 },
+  cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1.0 },
+  cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 8 },
   cleanRoleText:     { fontSize: 26, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, marginBottom: 24 }, 
   cleanActionRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cleanDurationBox:  { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cleanDurationText: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5 },
+  cleanDurationText: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5 },
   cleanJoinBtn:      { flexDirection: 'row', alignItems: 'center', backgroundColor: C.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100, gap: 8 },
   cleanJoinBtnText:  { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 1.5 },
   emptyView: { alignItems: 'center', marginTop: 100, paddingHorizontal: 40 },
-  emptyLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, marginBottom: 24 },
+  emptyLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 1.5, marginBottom: 24 },
 });

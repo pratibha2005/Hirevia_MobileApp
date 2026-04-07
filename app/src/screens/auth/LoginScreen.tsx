@@ -11,16 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
 
-// ─── Home Screen "Pure Matte" Sync ───────────────────────────────────────────
-const THEME = {
-    primary: '#2C2C2C',     // Deep Matte Dark Grey
-    background: '#F3F3F3',  // Pure Matte Light Grey
-    surface: '#FFFFFF',     // Pure White
-    text: '#1A1A1A',        // Matte Black
-    textMuted: '#7A7A7A',   // Matte Medium Grey
-    border: '#E6E6E6',      // Ultra-soft grey
-    radius: 100,            // Pill geometry
-};
+import { PALETTE as THEME, TYPOGRAPHY as T } from '../../theme/tokens';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -92,7 +83,7 @@ export default function LoginScreen({ navigation }: any) {
             <View style={[styles.floatingHeader, { paddingTop: insets.top + 8 }]}>
                 <Text style={styles.headerLogo}>Hire<Text style={styles.headerLogoBold}>Via</Text></Text>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
-                    <Ionicons name="close-outline" size={28} color={THEME.text} />
+                    <Ionicons name="close-outline" size={28} color={THEME.onSurface} />
                 </TouchableOpacity>
             </View>
 
@@ -139,7 +130,7 @@ export default function LoginScreen({ navigation }: any) {
                                     <AnimatedTextInput
                                         style={[styles.input, { borderBottomColor: emailFocusAnim.interpolate({
                                             inputRange: [0, 1],
-                                            outputRange: [THEME.border, THEME.primary]
+                                            outputRange: [THEME.outline, THEME.primary]
                                         }) }]}
                                         placeholder="name@studio.com"
                                         placeholderTextColor="#A0AEC0"
@@ -168,7 +159,7 @@ export default function LoginScreen({ navigation }: any) {
                                     <AnimatedTextInput
                                         style={[styles.input, { borderBottomColor: passFocusAnim.interpolate({
                                             inputRange: [0, 1],
-                                            outputRange: [THEME.border, THEME.primary]
+                                            outputRange: [THEME.outline, THEME.primary]
                                         }) }]}
                                         placeholder="••••••••"
                                         placeholderTextColor="#A0AEC0"
@@ -247,7 +238,7 @@ const styles = StyleSheet.create({
         zIndex: 100,
         backgroundColor: 'transparent',
     },
-    headerLogo: { fontSize: 18, fontWeight: '300', color: THEME.text, letterSpacing: -0.5 },
+    headerLogo: { fontSize: 18, fontWeight: '300', color: THEME.onSurface, letterSpacing: -0.5 },
     headerLogoBold: { fontWeight: '800', color: THEME.primary },
     closeBtn: { padding: 4 },
 
@@ -268,14 +259,14 @@ const styles = StyleSheet.create({
     heroLabel: { 
         fontSize: 10, 
         fontWeight: '800', 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         letterSpacing: 2.0,
         marginBottom: 8,
     },
     heroTitle: { 
         fontSize: 28, 
         fontWeight: '800', 
-        color: THEME.text, 
+        color: THEME.onSurface, 
         letterSpacing: -0.5,
         lineHeight: 34,
     },
@@ -286,13 +277,13 @@ const styles = StyleSheet.create({
     title: { 
         fontSize: 36, 
         fontWeight: '800', 
-        color: THEME.text, 
+        color: THEME.onSurface, 
         marginBottom: 8, 
         letterSpacing: -1.2,
     },
     subtitle: { 
         fontSize: 16, 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         lineHeight: 24,
         fontWeight: '500',
     },
@@ -303,19 +294,19 @@ const styles = StyleSheet.create({
     label: { 
         fontSize: 10, 
         fontWeight: '800', 
-        color: THEME.textMuted, 
+        color: THEME.onSurfaceVariant, 
         marginBottom: 10, 
         letterSpacing: 1.5,
         textTransform: 'uppercase',
     },
     labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    forgotLink: { fontSize: 10, fontWeight: '800', color: THEME.textMuted },
+    forgotLink: { fontSize: 10, fontWeight: '800', color: THEME.onSurfaceVariant },
     input: { 
         borderBottomWidth: 1.5, 
         borderBottomColor: '#E2E8F0', 
         paddingVertical: 12, 
         fontSize: 18, 
-        color: THEME.text,
+        color: THEME.onSurface,
         fontWeight: '400',
     },
     focusLine: { position: 'absolute', bottom: 0, left: 0, height: 2, backgroundColor: THEME.primary, zIndex: 2 },
@@ -331,7 +322,7 @@ const styles = StyleSheet.create({
     pillBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 12, letterSpacing: 1.5 },
 
     socialDivider: { flexDirection: 'row', alignItems: 'center', marginVertical: 32, gap: 16 },
-    line: { flex: 1, height: 1, backgroundColor: THEME.border },
+    line: { flex: 1, height: 1, backgroundColor: THEME.outline },
     dividerText: { fontSize: 9, fontWeight: '800', color: '#BCC2CD', letterSpacing: 1.0 },
     
     socialRow: { flexDirection: 'row', gap: 16 },
@@ -345,12 +336,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center', 
         gap: 12,
         borderWidth: 1,
-        borderColor: THEME.border,
+        borderColor: THEME.outline,
     },
     socialIcon: { width: 20, height: 20, resizeMode: 'contain' },
-    socialBtnText: { color: THEME.text, fontWeight: '800', fontSize: 13 },
+    socialBtnText: { color: THEME.onSurface, fontWeight: '800', fontSize: 13 },
 
     footer: { marginTop: 40, alignItems: 'center' },
-    footerText: { color: THEME.textMuted, fontSize: 15, fontWeight: '500' },
+    footerText: { color: THEME.onSurfaceVariant, fontSize: 15, fontWeight: '500' },
     joinText: { color: THEME.primary, fontWeight: '800' },
 });

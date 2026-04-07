@@ -19,20 +19,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../api/config';
+import { PALETTE as C, TYPOGRAPHY as T } from '../../theme/tokens';
 
 const { width } = Dimensions.get('window');
-
-// ─── Exact Design Tokens ────────────────────────────────────────────────────────
-const C = {
-  background:     '#F3F3F3', // Pure Matte Light Grey
-  surface:        '#FFFFFF', // Pure White for cards
-  surfaceLow:     '#FAFAFA', // Ultra-soft grey for chips
-  primary:        '#2C2C2C', // Deep Matte Dark Grey
-  primaryLight:   '#EBEBEB', // Soft structural grey
-  onSurface:      '#1A1A1A', // Matte Black
-  onSurfaceVar:   '#7A7A7A', // Matte medium grey
-  outlineVar:     '#E6E6E6', // Barely visible structure line
-};
 
 // ─── Bar Chart Data ──────────────────────────────────────────────────────────────
 const CHART_DATA = [
@@ -317,9 +306,9 @@ const styles = StyleSheet.create({
   scroll:            { paddingHorizontal: 24, paddingTop: 16 },
   header:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 },
   headerLeft:        { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  avatar:            { width: 32, height: 32, borderRadius: 16, backgroundColor: C.primaryLight, alignItems: 'center', justifyContent: 'center' },
+  avatar:            { width: 32, height: 32, borderRadius: 16, backgroundColor: C.surfaceContHigh, alignItems: 'center', justifyContent: 'center' },
   workspaceLabel:    { fontSize: 18, fontWeight: '500', color: C.onSurface, letterSpacing: -0.3 },
-  sectionLabel:      { fontSize: 10, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 },
+  sectionLabel:      { fontSize: 10, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 },
   divider:           { height: 56, backgroundColor: 'transparent' },
   pulseHeadline:     { fontSize: 24, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, lineHeight: 32 },
   pulseHighlight:    { fontWeight: '600' },
@@ -327,40 +316,40 @@ const styles = StyleSheet.create({
   barCol:            { flex: 1, alignItems: 'center', gap: 6 },
   barTrack:          { height: MAX_BAR_HEIGHT, justifyContent: 'flex-end', width: '100%', borderRadius: 2, overflow: 'hidden' },
   barFill:           { width: '100%', borderRadius: 2 },
-  barFillMuted:      { backgroundColor: C.outlineVar },
+  barFillMuted:      { backgroundColor: C.outlineVariant },
   barFillActive:     { backgroundColor: C.primary },
-  barLabel:          { fontSize: 10, fontWeight: '500', color: C.onSurfaceVar },
+  barLabel:          { fontSize: 10, fontWeight: '500', color: C.onSurfaceVariant },
   barLabelActive:    { color: C.primary, fontWeight: '700' },
   chartWrapper:      { position: 'relative' },
-  cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVar }, 
+  cleanMotionCard:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: C.outlineVariant }, 
   cleanMotionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   cleanStagePill:    { backgroundColor: C.surfaceLow, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4 },
   cleanStageText:    { fontSize: 10, fontWeight: '700', color: C.onSurface, letterSpacing: 1.5 },
-  cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.0 },
-  cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 8 },
+  cleanDateText:     { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1.0 },
+  cleanCompanyText:  { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 8 },
   cleanRoleText:     { fontSize: 26, fontWeight: '300', color: C.onSurface, letterSpacing: -0.5, marginBottom: 24 }, 
   cleanActionRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cleanJoinBtn:      { flexDirection: 'row', alignItems: 'center', backgroundColor: C.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100, gap: 8 },
   cleanJoinBtnText:  { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 1.5 },
   sectionHeader:     { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24 },
   sectionTitle:      { fontSize: 24, fontWeight: '600', color: C.onSurface, letterSpacing: -0.5 },
-  seeAll:            { fontSize: 11, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 4 },
-  jobCard:           { width: width * 0.65, backgroundColor: C.surface, borderRadius: 12, overflow: 'hidden', marginRight: 16, borderWidth: 1, borderColor: C.outlineVar }, 
-  jobImage:          { width: '100%', height: 120, backgroundColor: C.outlineVar },
+  seeAll:            { fontSize: 11, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 4 },
+  jobCard:           { width: width * 0.65, backgroundColor: C.surface, borderRadius: 12, overflow: 'hidden', marginRight: 16, borderWidth: 1, borderColor: C.outlineVariant }, 
+  jobImage:          { width: '100%', height: 120, backgroundColor: C.outlineVariant },
   jobCardContent:    { padding: 16 },
-  jobTags:           { fontSize: 9, fontWeight: '600', color: C.onSurfaceVar, letterSpacing: 0.5, marginBottom: 10 },
+  jobTags:           { fontSize: 9, fontWeight: '600', color: C.onSurfaceVariant, letterSpacing: 0.5, marginBottom: 10 },
   jobTitle:          { fontSize: 16, fontWeight: '600', color: C.onSurface, marginBottom: 6 },
-  jobCompany:        { fontSize: 13, color: C.onSurfaceVar, marginBottom: 16 },
+  jobCompany:        { fontSize: 13, color: C.onSurfaceVariant, marginBottom: 16 },
   activityList:      { marginTop: 16 },
   activityItem:      { flexDirection: 'row' },
   timelineCol:       { alignItems: 'center', width: 20, marginRight: 20 },
-  timelineDot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: C.outlineVar, marginTop: 6, zIndex: 2 },
+  timelineDot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: C.outlineVariant, marginTop: 6, zIndex: 2 },
   timelineDotActive: { backgroundColor: C.onSurface }, 
-  timelineLine:      { width: 1, flex: 1, backgroundColor: C.outlineVar, marginVertical: 4, opacity: 0.3 }, 
+  timelineLine:      { width: 1, flex: 1, backgroundColor: C.outlineVariant, marginVertical: 4, opacity: 0.3 }, 
   activityContent:   { flex: 1, paddingBottom: 40 },
-  activityTime:      { fontSize: 10, fontWeight: '700', color: C.onSurfaceVar, letterSpacing: 1.5, marginBottom: 8 },
+  activityTime:      { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1.5, marginBottom: 8 },
   activityTitle:     { fontSize: 16, fontWeight: '500', color: C.onSurface, marginBottom: 6, letterSpacing: -0.2 },
-  activityDesc:      { fontSize: 14, fontWeight: '400', color: C.onSurfaceVar, lineHeight: 22 },
+  activityDesc:      { fontSize: 14, fontWeight: '400', color: C.onSurfaceVariant, lineHeight: 22 },
   emptyState:        { alignItems: 'center', paddingVertical: 20 },
-  emptyText:         { fontSize: 13, color: C.onSurfaceVar },
+  emptyText:         { fontSize: 13, color: C.onSurfaceVariant },
 });
