@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ThemeToggleAuth } from '@/components/auth/ThemeToggleAuth';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Zap, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Zap, ArrowRight, AlertCircle, Loader2, Smartphone, Download } from 'lucide-react';
 import { API_BASE_URL, saveAuthSession, isAuthenticated } from '@/lib/apiClient';
 
 export default function LoginPage() {
@@ -279,10 +279,35 @@ export default function LoginPage() {
             Create an HR Account
           </Link>
 
-          <p className="text-center text-[11px] text-on-surface-subtle mt-6">
-            Are you an applicant?{' '}
-            <span className="text-primary font-semibold cursor-default">Use the mobile app instead.</span>
-          </p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-10 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 flex items-center justify-center shrink-0 border border-[#6366F1]/20">
+                <Smartphone className="w-5 h-5 text-[#6366F1]" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="space-y-1">
+                  <h3 className="text-[13px] font-bold text-white tracking-tight">Are you a candidate?</h3>
+                  <p className="text-[11px] text-on-surface-subtle leading-relaxed">
+                    Track your applications and schedule interviews on the go.
+                  </p>
+                </div>
+                
+                <a
+                  href="/hirevia-candidate.apk"
+                  download
+                  className="inline-flex items-center gap-2 text-[12px] font-extrabold text-[#6366F1] hover:text-[#8B5CF6] transition-all group"
+                >
+                  Download for Android
+                  <Download className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </div>
