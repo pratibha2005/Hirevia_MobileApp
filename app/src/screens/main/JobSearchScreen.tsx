@@ -62,7 +62,7 @@ function JobRow({ job, index, onPress }: { job: JobEntry; index: number; onPress
       <TouchableOpacity activeOpacity={0.8} style={styles.entryTile} onPress={onPress}>
         <View style={styles.entryLeft}>
           <View style={styles.entryIconBox}>
-             <MaterialCommunityIcons name={job.icon as any} size={20} color={C.surface} />
+             <MaterialCommunityIcons name={job.icon as any} size={18} color={C.primary} />
           </View>
           <View style={{ flex: 1 }}>
              <View style={styles.entryTitleRow}>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   heroMetaLabel:      { fontSize: 11, fontWeight: '900', letterSpacing: 3, color: C.outline, textTransform: 'uppercase', marginBottom: 6 },
   heroMetaValueIndigo:{ fontSize: 20, fontWeight: '700', color: C.indigo900 },
   heroMetaValue:      { fontSize: 20, fontWeight: '700', color: C.onSurface },
-  heroBtn:            { alignSelf: 'flex-start', paddingHorizontal: 36, paddingVertical: 16, backgroundColor: C.indigo900, borderRadius: 16, marginTop: 12, overflow: 'hidden' },
+  heroBtn:            { alignSelf: 'flex-start', paddingHorizontal: 36, paddingVertical: 16, backgroundColor: C.indigo900, borderRadius: 100, marginTop: 12, overflow: 'hidden' },
   heroBtnText:        { fontSize: 10, fontWeight: '900', letterSpacing: 3, color: '#ffffff' },
   
   tabsSurface:        { backgroundColor: C.background, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(169,180,185,0.08)' },
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   entryWrapper:       { marginBottom: 12 },
   entryTile:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: C.matteSand, borderRadius: 32, padding: 20 },
   entryLeft:          { flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1, marginRight: 12 },
-  entryIconBox:       { width: 48, height: 48, borderRadius: 24, backgroundColor: C.matteSlate, alignItems: 'center', justifyContent: 'center' },
+  entryIconBox:       { width: 40, height: 40, borderRadius: 12, backgroundColor: C.surfaceContLow, alignItems: 'center', justifyContent: 'center' },
   entryTitleRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
   entryTitle:         { fontSize: 16, fontWeight: '800', color: C.onSurface, letterSpacing: -0.4 },
   entryMeta:          { fontSize: 10, fontWeight: '700', color: C.onSurfaceVariant, letterSpacing: 1 },
